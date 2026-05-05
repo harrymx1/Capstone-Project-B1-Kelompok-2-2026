@@ -55,7 +55,11 @@ class ResetSuccessIllustration extends StatelessWidget {
           Positioned(
             right: 74,
             bottom: 55,
-            child: Icon(Icons.security, size: 76, color: Colors.indigo.shade500),
+            child: Icon(
+              Icons.security,
+              size: 76,
+              color: Colors.indigo.shade500,
+            ),
           ),
           const Positioned(
             right: 42,
@@ -65,7 +69,11 @@ class ResetSuccessIllustration extends StatelessWidget {
           const Positioned(
             left: 84,
             bottom: 26,
-            child: Icon(Icons.vpn_key_outlined, size: 42, color: Color(0xFFFFAA21)),
+            child: Icon(
+              Icons.vpn_key_outlined,
+              size: 42,
+              color: Color(0xFFFFAA21),
+            ),
           ),
         ],
       ),

@@ -31,15 +31,15 @@ class AuthButton extends StatelessWidget {
               : outlined
               ? Colors.transparent
               : isEnabled
-                  ? AppColors.primary
-                  : AppColors.disabledFill,
+              ? AppColors.primary
+              : AppColors.disabledFill,
           foregroundColor: inverted
               ? AppColors.primary
               : outlined
               ? Colors.white
               : isEnabled
-                  ? Colors.white
-                  : Colors.white.withOpacity(0.85),
+              ? Colors.white
+              : Colors.white.withValues(alpha: 0.85),
           side: BorderSide(
             color: outlined ? Colors.white : Colors.transparent,
             width: 1.2,
@@ -47,10 +47,7 @@ class AuthButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
         child: Text(label),
       ),

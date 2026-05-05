@@ -29,9 +29,7 @@ class _SignUpPageState extends State<SignUpPage> {
             height: 30,
             decoration: const BoxDecoration(
               color: AppColors.primaryDark,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(28),
-              ),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
             ),
           ),
           Expanded(
@@ -41,7 +39,10 @@ class _SignUpPageState extends State<SignUpPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 8),
-                  Text('Welcome,', style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    'Welcome,',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   const SizedBox(height: 3),
                   const Text(
                     "Let's get started by creating your account!",
