@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/app_colors.dart';
+import 'bills_top_up_page.dart';
+import 'cardless_page.dart';
+import 'investment_page.dart';
+import 'more_services_page.dart';
+import 'transfer_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -192,20 +197,31 @@ class _ShortcutSection extends StatelessWidget {
           crossAxisSpacing: 18,
           childAspectRatio: 0.82,
           children: const [
-            _ShortcutItem(icon: Icons.send_outlined, label: 'Transfer'),
+            _ShortcutItem(
+              icon: Icons.send_outlined,
+              label: 'Transfer',
+              routeName: TransferPage.routeName,
+            ),
             _ShortcutItem(
               icon: Icons.receipt_long_outlined,
               label: 'Bills &\nTop Up',
+              routeName: BillsTopUpPage.routeName,
             ),
-            _ShortcutItem(icon: Icons.money_outlined, label: 'Cardless'),
+            _ShortcutItem(
+              icon: Icons.money_outlined,
+              label: 'Cardless',
+              routeName: CardlessPage.routeName,
+            ),
             SizedBox.shrink(),
             _ShortcutItem(
               icon: Icons.account_balance_wallet_outlined,
               label: 'Investment',
+              routeName: InvestmentPage.routeName,
             ),
             _ShortcutItem(
               icon: Icons.more_horiz_rounded,
               label: 'Lainnya',
+              routeName: MoreServicesPage.routeName,
               muted: true,
             ),
           ],
@@ -250,45 +266,55 @@ class _ShortcutItem extends StatelessWidget {
   const _ShortcutItem({
     required this.icon,
     required this.label,
+    required this.routeName,
     this.muted = false,
   });
 
   final IconData icon;
   final String label;
+  final String routeName;
   final bool muted;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: muted ? const Color(0xFF737B8C) : AppColors.primary,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x22000000),
-                blurRadius: 8,
-                offset: Offset(0, 5),
+    return Semantics(
+      button: true,
+      label: label.replaceAll('\n', ' '),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => Navigator.pushNamed(context, routeName),
+        child: Column(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: muted ? const Color(0xFF737B8C) : AppColors.primary,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x22000000),
+                    blurRadius: 8,
+                    offset: Offset(0, 5),
+                  ),
+                ],
               ),
-            ],
-          ),
-          // TODO: replace with actual asset
-          child: Icon(icon, color: Colors.white, size: 30),
+              // TODO: replace with actual asset
+              child: Icon(icon, color: Colors.white, size: 30),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF1B2435),
+                fontSize: 12,
+                height: 1.2,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Color(0xFF1B2435),
-            fontSize: 12,
-            height: 1.2,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
