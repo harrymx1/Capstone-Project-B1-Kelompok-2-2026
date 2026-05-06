@@ -1,21 +1,8 @@
 import 'package:flutter/material.dart';
 
-class TransferPage extends StatelessWidget {
-  const TransferPage({super.key});
-
-  static const String routeName = '/transfer';
-
-  @override
-  Widget build(BuildContext context) {
-    return const _FeaturePlaceholderScaffold(
-      title: 'Transfer',
-      message: 'Halaman placeholder untuk fitur Transfer.',
-    );
-  }
-}
-
-class _FeaturePlaceholderScaffold extends StatelessWidget {
-  const _FeaturePlaceholderScaffold({
+class FeaturePlaceholderPage extends StatelessWidget {
+  const FeaturePlaceholderPage({
+    super.key,
     required this.title,
     required this.message,
   });

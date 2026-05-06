@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../home/pages/home_page.dart';
 import '../widgets/auth_button.dart';
 import 'forgot_password_page.dart';

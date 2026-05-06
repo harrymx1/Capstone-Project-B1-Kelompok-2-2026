@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/app_colors.dart';
-import 'bills_top_up_page.dart';
-import 'cardless_page.dart';
-import 'investment_page.dart';
-import 'more_services_page.dart';
-import 'transfer_page.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../bills/pages/bills_top_up_page.dart';
+import '../../investment/pages/investment_page.dart';
+import '../../others/pages/more_services_page.dart';
+import '../../transfer/pages/transfer_page.dart';
+import '../../withdrawal/pages/cardless_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
