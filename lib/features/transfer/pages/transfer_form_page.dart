@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../models/transfer_draft.dart';
+import '../models/transfer_schedule.dart';
 import 'confirm_transfer_page.dart';
+import 'schedule_transfer_page.dart';
 
 class TransferFormPage extends StatefulWidget {
   const TransferFormPage({super.key});
@@ -19,6 +21,7 @@ class _TransferFormPageState extends State<TransferFormPage> {
   final messageController = TextEditingController(text: 'From yanto');
 
   String selectedBank = 'CIMB NIAGA';
+  TransferSchedule? schedule;
 
   static const banks = [
     'BCA',
@@ -104,6 +107,11 @@ class _TransferFormPageState extends State<TransferFormPage> {
                       label: 'Message (Optional)',
                       child: _InputField(controller: messageController),
                     ),
+                    const SizedBox(height: 20),
+                    _ScheduleSwitchTile(
+                      enabled: schedule != null,
+                      onChanged: _openSchedulePage,
+                    ),
                   ],
                 ),
               ),
@@ -132,6 +140,23 @@ class _TransferFormPageState extends State<TransferFormPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _openSchedulePage(bool value) async {
+    if (!value) {
+      setState(() => schedule = null);
+      return;
+    }
+
+    final result = await Navigator.pushNamed(
+      context,
+      ScheduleTransferPage.routeName,
+    );
+    if (!mounted) return;
+
+    if (result is TransferSchedule) {
+      setState(() => schedule = result);
+    }
   }
 
   void _showBankPicker() {
@@ -208,6 +233,43 @@ class _TransferFormPageState extends State<TransferFormPage> {
           ),
         );
       },
+    );
+  }
+}
+
+class _ScheduleSwitchTile extends StatelessWidget {
+  const _ScheduleSwitchTile({required this.enabled, required this.onChanged});
+
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(
+          child: Text(
+            'Set schedule for this transaction',
+            style: TextStyle(
+              color: AppColors.text,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        Transform.scale(
+          scale: 0.78,
+          child: Switch(
+            value: enabled,
+            onChanged: onChanged,
+            activeThumbColor: Colors.white,
+            activeTrackColor: const Color(0xFF15213A),
+            inactiveThumbColor: Colors.white,
+            inactiveTrackColor: const Color(0xFFE1E6EC),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+      ],
     );
   }
 }

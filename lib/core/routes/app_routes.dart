@@ -12,6 +12,7 @@ import '../../features/investment/pages/investment_page.dart';
 import '../../features/others/pages/more_services_page.dart';
 import '../../features/transfer/models/transfer_draft.dart';
 import '../../features/transfer/pages/confirm_transfer_page.dart';
+import '../../features/transfer/pages/schedule_transfer_page.dart';
 import '../../features/transfer/pages/transfer_form_page.dart';
 import '../../features/transfer/pages/transfer_page.dart';
 import '../../features/transfer/pages/transfer_success_page.dart';
@@ -45,6 +46,8 @@ class AppRoutes {
             return const TransferPage();
           case TransferFormPage.routeName:
             return const TransferFormPage();
+          case ScheduleTransferPage.routeName:
+            return const ScheduleTransferPage();
           case ConfirmTransferPage.routeName:
             return ConfirmTransferPage(
               draft:
