@@ -18,6 +18,7 @@ import '../../features/home/pages/bottom_nav_placeholder_page.dart';
 import '../../features/home/pages/home_page.dart';
 import '../../features/investment/pages/investment_page.dart';
 import '../../features/others/pages/more_services_page.dart';
+import '../../features/profile/pages/profile_page.dart';
 import '../../features/transfer/models/transfer_draft.dart';
 import '../../features/transfer/pages/confirm_transfer_page.dart';
 import '../../features/transfer/pages/schedule_transfer_page.dart';
@@ -119,6 +120,8 @@ class AppRoutes {
             return const WealthPage();
           case MoreServicesPage.routeName:
             return const MoreServicesPage();
+          case ProfilePage.routeName:
+            return const ProfilePage();
           default:
             return const LoginPage();
         }

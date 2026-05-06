@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../bills/pages/bills_top_up_page.dart';
 import '../../investment/pages/investment_page.dart';
 import '../../others/pages/more_services_page.dart';
+import '../../profile/pages/profile_page.dart';
 import '../../transfer/pages/transfer_page.dart';
 import '../../wealth/pages/wealth_page.dart';
 import '../../withdrawal/pages/cardless_page.dart';
@@ -74,9 +75,9 @@ class _HomeHeader extends StatelessWidget {
       height: 76,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       color: AppColors.primary,
-      child: const Row(
+      child: Row(
         children: [
-          Expanded(
+          const Expanded(
             child: Text.rich(
               TextSpan(
                 text: 'Good Morning\n',
@@ -95,12 +96,23 @@ class _HomeHeader extends StatelessWidget {
               ),
             ),
           ),
-          Icon(Icons.notifications_none_rounded, color: Colors.white, size: 28),
-          SizedBox(width: 14),
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.white,
-            child: Icon(Icons.person_outline_rounded, color: AppColors.primary),
+          const Icon(
+            Icons.notifications_none_rounded,
+            color: Colors.white,
+            size: 28,
+          ),
+          const SizedBox(width: 14),
+          InkWell(
+            borderRadius: BorderRadius.circular(22),
+            onTap: () => Navigator.pushNamed(context, ProfilePage.routeName),
+            child: const CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.white,
+              child: Icon(
+                Icons.person_outline_rounded,
+                color: AppColors.primary,
+              ),
+            ),
           ),
         ],
       ),
