@@ -14,6 +14,7 @@ import '../../features/bills/pages/electricity_bill_page.dart';
 import '../../features/bills/pages/electricity_success_page.dart';
 import '../../features/bills/pages/e_wallet_top_up_page.dart';
 import '../../features/bills/pages/top_up_success_page.dart';
+import '../../features/home/pages/bottom_nav_placeholder_page.dart';
 import '../../features/home/pages/home_page.dart';
 import '../../features/investment/pages/investment_page.dart';
 import '../../features/others/pages/more_services_page.dart';
@@ -28,6 +29,7 @@ import '../../features/withdrawal/pages/cardless_amount_page.dart';
 import '../../features/withdrawal/pages/cardless_page.dart';
 import '../../features/withdrawal/pages/cardless_success_page.dart';
 import '../../features/withdrawal/pages/cardless_summary_page.dart';
+import '../../features/wealth/pages/wealth_page.dart';
 
 class AppRoutes {
   const AppRoutes._();
@@ -53,6 +55,10 @@ class AppRoutes {
             return const ResetSuccessPage();
           case HomePage.routeName:
             return const HomePage();
+          case BottomNavPlaceholderPage.routeName:
+            return BottomNavPlaceholderPage(
+              title: settings.arguments as String? ?? 'Menu',
+            );
           case TransferPage.routeName:
             return const TransferPage();
           case TransferFormPage.routeName:
@@ -109,6 +115,8 @@ class AppRoutes {
             return const CardlessSuccessPage();
           case InvestmentPage.routeName:
             return const InvestmentPage();
+          case WealthPage.routeName:
+            return const WealthPage();
           case MoreServicesPage.routeName:
             return const MoreServicesPage();
           default:

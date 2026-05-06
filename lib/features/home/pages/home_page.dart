@@ -5,7 +5,9 @@ import '../../bills/pages/bills_top_up_page.dart';
 import '../../investment/pages/investment_page.dart';
 import '../../others/pages/more_services_page.dart';
 import '../../transfer/pages/transfer_page.dart';
+import '../../wealth/pages/wealth_page.dart';
 import '../../withdrawal/pages/cardless_page.dart';
+import 'bottom_nav_placeholder_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -634,18 +636,47 @@ class _HomeBottomNav extends StatelessWidget {
           ),
         ],
       ),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _NavItem(icon: Icons.home_outlined, label: 'Home', selected: true),
-          _NavItem(icon: Icons.credit_card_rounded, label: 'My Account'),
+          const _NavItem(
+            icon: Icons.home_outlined,
+            label: 'Home',
+            selected: true,
+          ),
+          _NavItem(
+            icon: Icons.credit_card_rounded,
+            label: 'My Account',
+            onTap: () => Navigator.pushNamed(
+              context,
+              BottomNavPlaceholderPage.routeName,
+              arguments: 'My Account',
+            ),
+          ),
           _NavItem(
             icon: Icons.qr_code_scanner_rounded,
             label: 'QRIS',
             blue: true,
+            onTap: () => Navigator.pushNamed(
+              context,
+              BottomNavPlaceholderPage.routeName,
+              arguments: 'QRIS',
+            ),
           ),
-          _NavItem(icon: Icons.storage_rounded, label: 'Wealth'),
-          _NavItem(icon: Icons.settings_outlined, label: 'Settings'),
+          _NavItem(
+            icon: Icons.storage_rounded,
+            label: 'Wealth',
+            onTap: () => Navigator.pushNamed(context, WealthPage.routeName),
+          ),
+          _NavItem(
+            icon: Icons.settings_outlined,
+            label: 'Settings',
+            onTap: () => Navigator.pushNamed(
+              context,
+              BottomNavPlaceholderPage.routeName,
+              arguments: 'Settings',
+            ),
+          ),
         ],
       ),
     );
@@ -658,12 +689,14 @@ class _NavItem extends StatelessWidget {
     required this.label,
     this.selected = false,
     this.blue = false,
+    this.onTap,
   });
 
   final IconData icon;
   final String label;
   final bool selected;
   final bool blue;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -673,25 +706,28 @@ class _NavItem extends StatelessWidget {
         ? const Color(0xFF008BFF)
         : const Color(0xFF898989);
 
-    return SizedBox(
-      width: 68,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // TODO: replace with actual asset
-          Icon(icon, color: color, size: blue ? 30 : 27),
-          const SizedBox(height: 3),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontSize: 10,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+    return InkWell(
+      onTap: onTap,
+      child: SizedBox(
+        width: 68,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // TODO: replace with actual asset
+            Icon(icon, color: color, size: blue ? 30 : 27),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
