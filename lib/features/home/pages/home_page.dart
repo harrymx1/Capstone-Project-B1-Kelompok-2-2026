@@ -71,7 +71,7 @@ class _HomeHeader extends StatelessWidget {
     return Container(
       height: 76,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      color: const Color(0xFFD7193F),
+      color: AppColors.primary,
       child: const Row(
         children: [
           Expanded(
@@ -523,7 +523,7 @@ class _PromoBanner extends StatelessWidget {
             width: MediaQuery.of(context).size.width - 72,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFB20719),
+              color: AppColors.primary,
               borderRadius: BorderRadius.circular(6),
             ),
             child: Row(
@@ -573,7 +573,7 @@ class _PromoBanner extends StatelessWidget {
             width: 88,
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFD40000),
+              color: AppColors.primary,
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Center(

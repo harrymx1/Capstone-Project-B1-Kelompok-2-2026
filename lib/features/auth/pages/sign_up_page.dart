@@ -99,7 +99,13 @@ class _SignUpPageState extends State<SignUpPage> {
                   const SizedBox(height: 24),
                   AuthButton(
                     label: 'Sign up',
-                    onPressed: agreed ? () {} : null,
+                    onPressed: agreed
+                        ? () => Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            LoginPage.routeName,
+                            (_) => false,
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 26),
                   Center(
