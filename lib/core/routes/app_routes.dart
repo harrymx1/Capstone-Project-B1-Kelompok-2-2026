@@ -6,9 +6,12 @@ import '../../features/auth/pages/login_page.dart';
 import '../../features/auth/pages/reset_success_page.dart';
 import '../../features/auth/pages/sign_up_page.dart';
 import '../../features/auth/pages/verification_code_page.dart';
+import '../../features/bills/models/electricity_draft.dart';
 import '../../features/bills/models/top_up_draft.dart';
 import '../../features/bills/pages/bills_menu_placeholder_page.dart';
 import '../../features/bills/pages/bills_top_up_page.dart';
+import '../../features/bills/pages/electricity_bill_page.dart';
+import '../../features/bills/pages/electricity_success_page.dart';
 import '../../features/bills/pages/e_wallet_top_up_page.dart';
 import '../../features/bills/pages/top_up_success_page.dart';
 import '../../features/home/pages/home_page.dart';
@@ -79,6 +82,16 @@ class AppRoutes {
           case TopUpSuccessPage.routeName:
             return TopUpSuccessPage(
               draft: settings.arguments as TopUpDraft? ?? TopUpDraft.empty(),
+            );
+          case ElectricityBillPage.routeName:
+            return ElectricityBillPage(
+              type: settings.arguments as String? ?? 'Electricity Bill',
+            );
+          case ElectricitySuccessPage.routeName:
+            return ElectricitySuccessPage(
+              draft:
+                  settings.arguments as ElectricityDraft? ??
+                  ElectricityDraft.empty(),
             );
           case CardlessPage.routeName:
             return const CardlessPage();

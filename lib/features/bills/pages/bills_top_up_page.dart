@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import 'bills_menu_placeholder_page.dart';
+import 'electricity_bill_page.dart';
 import 'e_wallet_top_up_page.dart';
 
 class BillsTopUpPage extends StatelessWidget {
@@ -27,6 +28,12 @@ class BillsTopUpPage extends StatelessWidget {
     'Gudang Voucher',
     'iPaymu Top Up',
     'Neo Pay',
+  ];
+
+  static const electricityOptions = [
+    'Electricity Token',
+    'Electricity Bill',
+    'Non-Electricity Bill',
   ];
 
   @override
@@ -97,7 +104,7 @@ class BillsTopUpPage extends StatelessWidget {
                         _BillMenuItem(
                           icon: Icons.bolt_rounded,
                           label: 'Electricity',
-                          onTap: () => _openPlaceholder(context, 'Electricity'),
+                          onTap: () => _showElectricityPicker(context),
                         ),
                         _BillMenuItem(
                           icon: Icons.payment_rounded,
@@ -237,6 +244,67 @@ class BillsTopUpPage extends StatelessWidget {
                       );
                     },
                   ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showElectricityPicker(BuildContext context) {
+    final pageContext = context;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Electricity',
+                  style: TextStyle(
+                    color: AppColors.text,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: electricityOptions.length,
+                  separatorBuilder: (_, _) =>
+                      const Divider(height: 1, color: Color(0xFFE6E6E6)),
+                  itemBuilder: (context, index) {
+                    final option = electricityOptions[index];
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        option,
+                        style: const TextStyle(
+                          color: AppColors.text,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(
+                          pageContext,
+                          ElectricityBillPage.routeName,
+                          arguments: option,
+                        );
+                      },
+                    );
+                  },
                 ),
               ],
             ),
