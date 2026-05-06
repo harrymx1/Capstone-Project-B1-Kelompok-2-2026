@@ -10,7 +10,11 @@ import '../../features/bills/pages/bills_top_up_page.dart';
 import '../../features/home/pages/home_page.dart';
 import '../../features/investment/pages/investment_page.dart';
 import '../../features/others/pages/more_services_page.dart';
+import '../../features/transfer/models/transfer_draft.dart';
+import '../../features/transfer/pages/confirm_transfer_page.dart';
+import '../../features/transfer/pages/transfer_form_page.dart';
 import '../../features/transfer/pages/transfer_page.dart';
+import '../../features/transfer/pages/transfer_success_page.dart';
 import '../../features/withdrawal/pages/cardless_page.dart';
 
 class AppRoutes {
@@ -18,18 +22,51 @@ class AppRoutes {
 
   static const String initial = LoginPage.routeName;
 
-  static Map<String, WidgetBuilder> routes = {
-    LoginPage.routeName: (_) => const LoginPage(),
-    SignUpPage.routeName: (_) => const SignUpPage(),
-    ForgotPasswordPage.routeName: (_) => const ForgotPasswordPage(),
-    VerificationCodePage.routeName: (_) => const VerificationCodePage(),
-    ChangePasswordPage.routeName: (_) => const ChangePasswordPage(),
-    ResetSuccessPage.routeName: (_) => const ResetSuccessPage(),
-    HomePage.routeName: (_) => const HomePage(),
-    TransferPage.routeName: (_) => const TransferPage(),
-    BillsTopUpPage.routeName: (_) => const BillsTopUpPage(),
-    CardlessPage.routeName: (_) => const CardlessPage(),
-    InvestmentPage.routeName: (_) => const InvestmentPage(),
-    MoreServicesPage.routeName: (_) => const MoreServicesPage(),
-  };
+  static Route<dynamic> onGenerateRoute(RouteSettings settings) {
+    return MaterialPageRoute(
+      settings: settings,
+      builder: (_) {
+        switch (settings.name) {
+          case LoginPage.routeName:
+            return const LoginPage();
+          case SignUpPage.routeName:
+            return const SignUpPage();
+          case ForgotPasswordPage.routeName:
+            return const ForgotPasswordPage();
+          case VerificationCodePage.routeName:
+            return const VerificationCodePage();
+          case ChangePasswordPage.routeName:
+            return const ChangePasswordPage();
+          case ResetSuccessPage.routeName:
+            return const ResetSuccessPage();
+          case HomePage.routeName:
+            return const HomePage();
+          case TransferPage.routeName:
+            return const TransferPage();
+          case TransferFormPage.routeName:
+            return const TransferFormPage();
+          case ConfirmTransferPage.routeName:
+            return ConfirmTransferPage(
+              draft:
+                  settings.arguments as TransferDraft? ?? TransferDraft.empty(),
+            );
+          case TransferSuccessPage.routeName:
+            return TransferSuccessPage(
+              draft:
+                  settings.arguments as TransferDraft? ?? TransferDraft.empty(),
+            );
+          case BillsTopUpPage.routeName:
+            return const BillsTopUpPage();
+          case CardlessPage.routeName:
+            return const CardlessPage();
+          case InvestmentPage.routeName:
+            return const InvestmentPage();
+          case MoreServicesPage.routeName:
+            return const MoreServicesPage();
+          default:
+            return const LoginPage();
+        }
+      },
+    );
+  }
 }

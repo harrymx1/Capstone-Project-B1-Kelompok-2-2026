@@ -13,7 +13,7 @@ class MobileBankingApp extends StatelessWidget {
       title: 'Mobile Banking UI',
       theme: AppTheme.light(),
       initialRoute: AppRoutes.initial,
-      routes: AppRoutes.routes,
+      onGenerateRoute: AppRoutes.onGenerateRoute,
     );
   }
 }
