@@ -16,7 +16,11 @@ import '../../features/transfer/pages/schedule_transfer_page.dart';
 import '../../features/transfer/pages/transfer_form_page.dart';
 import '../../features/transfer/pages/transfer_page.dart';
 import '../../features/transfer/pages/transfer_success_page.dart';
+import '../../features/withdrawal/models/withdrawal_draft.dart';
+import '../../features/withdrawal/pages/cardless_amount_page.dart';
 import '../../features/withdrawal/pages/cardless_page.dart';
+import '../../features/withdrawal/pages/cardless_success_page.dart';
+import '../../features/withdrawal/pages/cardless_summary_page.dart';
 
 class AppRoutes {
   const AppRoutes._();
@@ -62,6 +66,18 @@ class AppRoutes {
             return const BillsTopUpPage();
           case CardlessPage.routeName:
             return const CardlessPage();
+          case CardlessAmountPage.routeName:
+            return CardlessAmountPage(
+              location: settings.arguments as String? ?? 'CIMB NIAGA ATM',
+            );
+          case CardlessSummaryPage.routeName:
+            return CardlessSummaryPage(
+              draft:
+                  settings.arguments as WithdrawalDraft? ??
+                  WithdrawalDraft.empty(),
+            );
+          case CardlessSuccessPage.routeName:
+            return const CardlessSuccessPage();
           case InvestmentPage.routeName:
             return const InvestmentPage();
           case MoreServicesPage.routeName:
