@@ -6,7 +6,11 @@ import '../../features/auth/pages/login_page.dart';
 import '../../features/auth/pages/reset_success_page.dart';
 import '../../features/auth/pages/sign_up_page.dart';
 import '../../features/auth/pages/verification_code_page.dart';
+import '../../features/bills/models/top_up_draft.dart';
+import '../../features/bills/pages/bills_menu_placeholder_page.dart';
 import '../../features/bills/pages/bills_top_up_page.dart';
+import '../../features/bills/pages/e_wallet_top_up_page.dart';
+import '../../features/bills/pages/top_up_success_page.dart';
 import '../../features/home/pages/home_page.dart';
 import '../../features/investment/pages/investment_page.dart';
 import '../../features/others/pages/more_services_page.dart';
@@ -64,6 +68,18 @@ class AppRoutes {
             );
           case BillsTopUpPage.routeName:
             return const BillsTopUpPage();
+          case BillsMenuPlaceholderPage.routeName:
+            return BillsMenuPlaceholderPage(
+              title: settings.arguments as String? ?? 'Bills & Top Up',
+            );
+          case EWalletTopUpPage.routeName:
+            return EWalletTopUpPage(
+              walletName: settings.arguments as String? ?? 'GoPay',
+            );
+          case TopUpSuccessPage.routeName:
+            return TopUpSuccessPage(
+              draft: settings.arguments as TopUpDraft? ?? TopUpDraft.empty(),
+            );
           case CardlessPage.routeName:
             return const CardlessPage();
           case CardlessAmountPage.routeName:
