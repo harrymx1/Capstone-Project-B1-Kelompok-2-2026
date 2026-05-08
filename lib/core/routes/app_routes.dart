@@ -87,9 +87,7 @@ class AppRoutes {
               walletName: settings.arguments as String? ?? 'GoPay',
             );
           case TopUpSuccessPage.routeName:
-            return TopUpSuccessPage(
-              draft: settings.arguments as TopUpDraft? ?? TopUpDraft.empty(),
-            );
+            return const TopUpSuccessPage();
           case ElectricityBillPage.routeName:
             return ElectricityBillPage(
               type: settings.arguments as String? ?? 'Electricity Bill',

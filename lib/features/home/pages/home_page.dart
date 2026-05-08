@@ -705,56 +705,98 @@ class _PromoTabs extends StatelessWidget {
 }
 
 class _PromoBanner extends StatelessWidget {
-  const _PromoBanner({required this.promoCatalog});
+  const _PromoBanner({
+    required this.recommendation,
+    required this.promoCatalog,
+  });
 
+  final Map<String, dynamic>? recommendation;
   final List<dynamic> promoCatalog;
 
   @override
   Widget build(BuildContext context) {
-    if (promoCatalog.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final hero =
+        recommendation?['primary_hero'] ?? 'Promo Personal Untuk Kamu';
+
+    final action =
+        recommendation?['suggested_action'] ?? 'Cek promo terbaru';
+
+    final insight =
+        recommendation?['insight'] ?? 'Nikmati layanan yang sesuai kebutuhanmu.';
+
+    final promoItems = promoCatalog.take(4).toList();
 
     return SizedBox(
       height: 170,
-      child: ListView.separated(
+      child: ListView(
         scrollDirection: Axis.horizontal,
-        itemCount: promoCatalog.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final promo = promoCatalog[index];
-
-          return Container(
+        children: [
+          Container(
             width: MediaQuery.of(context).size.width - 72,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: AppColors.primary,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(6),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  promo['item_name'] ?? '',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                Expanded(
+                  flex: 6,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hero,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        action,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        insight,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      for (final item in promoItems)
+                        _PromoLine(item['item_name'] ?? ''),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  promo['description'] ?? '',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    height: 1.4,
+                Expanded(
+                  flex: 4,
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(
+                      Icons.local_offer_outlined,
+                      color: Colors.white,
+                      size: 70,
+                    ),
                   ),
                 ),
               ],
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }

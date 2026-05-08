@@ -5,14 +5,18 @@ import '../../home/pages/home_page.dart';
 import '../models/top_up_draft.dart';
 
 class TopUpSuccessPage extends StatelessWidget {
-  const TopUpSuccessPage({super.key, required this.draft});
+  const TopUpSuccessPage({super.key});
 
   static const String routeName = '/top-up-success';
 
-  final TopUpDraft draft;
-
   @override
   Widget build(BuildContext context) {
+    final args =
+    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    final draft = args?['draft'] as TopUpDraft;
+    final user = args?['user'] as Map<String, dynamic>?;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -53,7 +57,7 @@ class TopUpSuccessPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const _AccountCard(),
+                    _AccountCard(user: user),
                     const SizedBox(height: 18),
                     const Text(
                       'Transaction Details',
@@ -80,10 +84,9 @@ class TopUpSuccessPage extends StatelessWidget {
                 width: double.infinity,
                 height: 46,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                  onPressed: () => Navigator.popUntil(
                     context,
-                    HomePage.routeName,
-                    (_) => false,
+                    ModalRoute.withName(HomePage.routeName),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -146,10 +149,14 @@ class _SuccessHeader extends StatelessWidget {
 }
 
 class _AccountCard extends StatelessWidget {
-  const _AccountCard();
+  const _AccountCard({this.user});
+
+  final Map<String, dynamic>? user;
 
   @override
   Widget build(BuildContext context) {
+    final userName = user?['nama'] ?? 'David';
+
     return Container(
       width: double.infinity,
       height: 104,
@@ -165,17 +172,16 @@ class _AccountCard extends StatelessWidget {
           ),
         ],
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // TODO: replace with actual asset
-          Icon(Icons.credit_card_rounded, color: Colors.white, size: 52),
-          SizedBox(width: 10),
+          const Icon(Icons.credit_card_rounded, color: Colors.white, size: 52),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'OCTO Pay (*****6147)',
                   style: TextStyle(
                     color: Colors.white,
@@ -184,11 +190,14 @@ class _AccountCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'David',
-                  style: TextStyle(color: Colors.white, fontSize: 11),
+                  userName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                  ),
                 ),
-                Spacer(),
-                Text(
+                const Spacer(),
+                const Text(
                   'Balance\nRp 67.670',
                   style: TextStyle(
                     color: Colors.white,

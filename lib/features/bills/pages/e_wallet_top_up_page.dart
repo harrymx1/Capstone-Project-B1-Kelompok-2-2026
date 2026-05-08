@@ -19,6 +19,16 @@ class _EWalletTopUpPageState extends State<EWalletTopUpPage> {
   final destinationController = TextEditingController(text: '081275432155');
   final amountController = TextEditingController(text: 'IDR 20.000');
 
+  Map<String, dynamic>? get _user {
+    final routeArgs = ModalRoute.of(context)?.settings.arguments;
+
+    if (routeArgs is Map<String, dynamic> && routeArgs.containsKey('nama')) {
+      return routeArgs;
+    }
+
+    return null;
+  }
+
   @override
   void dispose() {
     destinationController.dispose();
@@ -160,7 +170,10 @@ class _EWalletTopUpPageState extends State<EWalletTopUpPage> {
                     Navigator.pushNamed(
                       pageContext,
                       TopUpSuccessPage.routeName,
-                      arguments: draft,
+                      arguments: {
+                        'draft': draft,
+                        'user': _user,
+                      },
                     );
                   },
                 ),
@@ -213,10 +226,14 @@ class _TopUpHeader extends StatelessWidget {
 }
 
 class _AccountCard extends StatelessWidget {
-  const _AccountCard();
+  const _AccountCard({this.user});
+
+  final Map<String, dynamic>? user;
 
   @override
   Widget build(BuildContext context) {
+    final userName = user?['nama'] ?? 'David';
+
     return Container(
       width: double.infinity,
       height: 104,
@@ -232,17 +249,16 @@ class _AccountCard extends StatelessWidget {
           ),
         ],
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // TODO: replace with actual asset
-          Icon(Icons.credit_card_rounded, color: Colors.white, size: 52),
-          SizedBox(width: 10),
+          const Icon(Icons.credit_card_rounded, color: Colors.white, size: 52),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'OCTO Pay (*****6147)',
                   style: TextStyle(
                     color: Colors.white,
@@ -251,11 +267,14 @@ class _AccountCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'David',
-                  style: TextStyle(color: Colors.white, fontSize: 11),
+                  userName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                  ),
                 ),
-                Spacer(),
-                Text(
+                const Spacer(),
+                const Text(
                   'Balance\nRp 67.670',
                   style: TextStyle(
                     color: Colors.white,
