@@ -11,19 +11,25 @@ import '../../withdrawal/pages/cardless_page.dart';
 import 'bottom_nav_placeholder_page.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.user});
 
   static const String routeName = '/home';
 
+  final Map<String, dynamic>? user;
+
   @override
   Widget build(BuildContext context) {
+    final routeUser =
+    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    final currentUser = user ?? routeUser;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            const _HomeHeader(),
+            _HomeHeader(user: currentUser),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
@@ -67,28 +73,33 @@ class HomePage extends StatelessWidget {
 }
 
 class _HomeHeader extends StatelessWidget {
-  const _HomeHeader();
+  const _HomeHeader({this.user});
+
+  final Map<String, dynamic>? user;
 
   @override
   Widget build(BuildContext context) {
+    final userName = user?['nama'] ?? 'David';
+    final persona = user?['segmen_persona'] ?? '';
+
     return Container(
       height: 76,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       color: AppColors.primary,
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text.rich(
               TextSpan(
                 text: 'Good Morning\n',
                 children: [
                   TextSpan(
-                    text: 'David!',
-                    style: TextStyle(fontWeight: FontWeight.w800),
+                    text: '$userName${persona.isNotEmpty ? ' ($persona)' : ''}',
+                    style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ],
               ),
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,

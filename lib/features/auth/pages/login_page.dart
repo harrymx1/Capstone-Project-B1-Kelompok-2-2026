@@ -1,15 +1,69 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../home/pages/home_page.dart';
 import '../widgets/auth_button.dart';
 import 'forgot_password_page.dart';
 import 'sign_up_page.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   static const String routeName = '/login';
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _userIdController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _handleLogin() async {
+    final userId = _userIdController.text.trim();
+
+    if (userId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User ID tidak boleh kosong')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final user = await AuthService.login(userId);
+
+      if (!mounted) return;
+
+      Navigator.pushReplacementNamed(
+        context,
+        HomePage.routeName,
+        arguments: user,
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _userIdController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +106,7 @@ class LoginPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 35),
                         TextField(
+                          controller: _userIdController,
                           keyboardType: TextInputType.text,
                           textInputAction: TextInputAction.done,
                           cursorColor: Colors.white,
@@ -79,12 +134,9 @@ class LoginPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 54),
                         AuthButton(
-                          label: 'Login',
+                          label: _isLoading ? 'Loading...' : 'Login',
                           inverted: true,
-                          onPressed: () => Navigator.pushReplacementNamed(
-                            context,
-                            HomePage.routeName,
-                          ),
+                          onPressed: _isLoading ? null : _handleLogin,
                         ),
                         const SizedBox(height: 22),
                         TextButton(
