@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/home_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../bills/pages/bills_top_up_page.dart';
 import '../../investment/pages/investment_page.dart';
@@ -10,7 +11,7 @@ import '../../wealth/pages/wealth_page.dart';
 import '../../withdrawal/pages/cardless_page.dart';
 import 'bottom_nav_placeholder_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key, this.user});
 
   static const String routeName = '/home';
@@ -18,11 +19,70 @@ class HomePage extends StatelessWidget {
   final Map<String, dynamic>? user;
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  Map<String, dynamic>? _homeData;
+  bool _loading = true;
+  bool _hasLoaded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_hasLoaded) {
+      _hasLoaded = true;
+      _loadHome();
+    }
+  }
+
+  Future<void> _loadHome() async {
+    final routeUser =
+    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    final currentUser = widget.user ?? routeUser;
+
+    if (currentUser == null) {
+      setState(() {
+        _loading = false;
+      });
+      return;
+    }
+
+    final userId = currentUser['user_id'];
+
+    try {
+      final result = await HomeService.getHomeData(userId);
+
+      if (!mounted) return;
+
+      setState(() {
+        _homeData = result;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final routeUser =
     ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
-    final currentUser = user ?? routeUser;
+    final currentUser = widget.user ?? routeUser;
+
+    final recommendation =
+    _homeData?['recommendation'] as Map<String, dynamic>?;
+
+    final promoCatalog =
+        (_homeData?['promo_catalog'] as List<dynamic>?) ?? [];
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -31,23 +91,84 @@ class HomePage extends StatelessWidget {
           children: [
             _HomeHeader(user: currentUser),
             Expanded(
-              child: SingleChildScrollView(
+              child: _loading
+                  ? const Center(
+                child: CircularProgressIndicator(),
+              )
+                  : SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const _BalanceCard(),
-                    const SizedBox(height: 26),
+                    const SizedBox(height: 20),
+
+                    if (recommendation != null)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F6FA),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              recommendation['primary_hero'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              recommendation['suggested_action'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              recommendation['insight'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    const SizedBox(height: 24),
                     const _ShortcutSection(),
+                    if (_loading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+
+                    if (!_loading && recommendation != null)
+                      _RecommendationCard(
+                        title: recommendation['primary_hero'] ?? '',
+                        action: recommendation['suggested_action'] ?? '',
+                        insight: recommendation['insight'] ?? '',
+                      ),
                     const SizedBox(height: 18),
+
                     _SectionTitle(
                       title: 'e-Wallet',
                       actionLabel: 'Lihat Semua',
                       onTap: () {},
                     ),
+
                     const SizedBox(height: 12),
                     const _WalletRow(),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
+
                     const Text(
                       'News & Promotion',
                       style: TextStyle(
@@ -56,10 +177,55 @@ class HomePage extends StatelessWidget {
                         color: Color(0xFF1B2435),
                       ),
                     ),
+
                     const SizedBox(height: 12),
-                    const _PromoTabs(),
-                    const SizedBox(height: 16),
-                    const _PromoBanner(),
+
+                    if (promoCatalog.isEmpty)
+                      const Text(
+                        'Belum ada promo tersedia.',
+                        style: TextStyle(
+                          color: Colors.black54,
+                        ),
+                      )
+                    else
+                      Column(
+                        children: promoCatalog.map((promo) {
+                          return Container(
+                            width: double.infinity,
+                            margin:
+                            const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius:
+                              BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  promo['item_name'] ?? '',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  promo['description'] ?? '',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
                   ],
                 ),
               ),
@@ -535,84 +701,56 @@ class _PromoTabs extends StatelessWidget {
 }
 
 class _PromoBanner extends StatelessWidget {
-  const _PromoBanner();
+  const _PromoBanner({required this.promoCatalog});
+
+  final List<dynamic> promoCatalog;
 
   @override
   Widget build(BuildContext context) {
+    if (promoCatalog.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return SizedBox(
       height: 170,
-      child: ListView(
+      child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        children: [
-          Container(
+        itemCount: promoCatalog.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final promo = promoCatalog[index];
+
+          return Container(
             width: MediaQuery.of(context).size.width - 72,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: AppColors.primary,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Expanded(
-                  flex: 6,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "From Payments to Travel,\nMade Easier with OCTO's New Features",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      _PromoLine('Easy Way to Verify Transactions'),
-                      _PromoLine('Set Your Credit Card Transaction Types'),
-                      _PromoLine('Tukar PoinXtra ke AsiaMiles'),
-                      _PromoLine('Jajan di Korea, Bayarnya Pakai Rupiah'),
-                    ],
+                Text(
+                  promo['item_name'] ?? '',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-                Expanded(
-                  flex: 4,
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    // TODO: replace with actual asset
-                    child: const Icon(
-                      Icons.phone_iphone_rounded,
-                      color: Colors.white,
-                      size: 74,
-                    ),
+                const SizedBox(height: 10),
+                Text(
+                  promo['description'] ?? '',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    height: 1.4,
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 16),
-          Container(
-            width: 88,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Center(
-              child: Text(
-                'GET\nPay\non OCTO',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -636,6 +774,68 @@ class _PromoLine extends StatelessWidget {
           fontSize: 9,
           fontWeight: FontWeight.w700,
         ),
+      ),
+    );
+  }
+}
+
+class _RecommendationCard extends StatelessWidget {
+  const _RecommendationCard({
+    required this.title,
+    required this.action,
+    required this.insight,
+  });
+
+  final String title;
+  final String action;
+  final String insight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F4F4),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Recommended For You',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            action,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            insight,
+            style: const TextStyle(
+              fontSize: 12,
+              height: 1.4,
+            ),
+          ),
+        ],
       ),
     );
   }
