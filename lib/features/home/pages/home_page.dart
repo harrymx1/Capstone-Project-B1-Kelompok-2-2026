@@ -281,7 +281,11 @@ class _HomeHeader extends StatelessWidget {
           const SizedBox(width: 14),
           InkWell(
             borderRadius: BorderRadius.circular(22),
-            onTap: () => Navigator.pushNamed(context, ProfilePage.routeName),
+            onTap: () => Navigator.pushNamed(
+              context,
+              ProfilePage.routeName,
+              arguments: user,
+            ),
             child: const CircleAvatar(
               radius: 20,
               backgroundColor: Colors.white,

@@ -4,12 +4,23 @@ import '../../../core/theme/app_colors.dart';
 import '../../auth/pages/login_page.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({super.key, this.user});
 
   static const String routeName = '/profile';
 
+  final Map<String, dynamic>? user;
+
   @override
   Widget build(BuildContext context) {
+    final routeUser =
+    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    final currentUser = user ?? routeUser;
+
+    final userName = currentUser?['nama'] ?? 'David';
+    final userId = currentUser?['user_id'] ?? '-';
+    final persona = currentUser?['segmen_persona'] ?? '-';
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -55,17 +66,26 @@ class ProfilePage extends StatelessWidget {
                 child: Column(
                   children: [
                     Transform.translate(
-                      offset: const Offset(0, -48),
+                      offset: const Offset(0, 0),
                       child: Column(
                         children: [
                           const _ProfileAvatar(),
                           const SizedBox(height: 10),
-                          const Text(
-                            'David',
-                            style: TextStyle(
+                          Text(
+                            userName,
+                            style: const TextStyle(
                               color: AppColors.primary,
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '$userId • $persona',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                           const SizedBox(height: 12),
