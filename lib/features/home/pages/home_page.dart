@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/services/home_service.dart';
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../bills/pages/bills_top_up_page.dart';
 import '../../investment/pages/investment_page.dart';
@@ -39,9 +40,9 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadHome() async {
     final routeUser =
-    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
-    final currentUser = widget.user ?? routeUser;
+    final currentUser = widget.user ?? routeUser ?? UserSession.user;
 
     if (currentUser == null) {
       setState(() {
@@ -49,6 +50,8 @@ class _HomePageState extends State<HomePage> {
       });
       return;
     }
+
+    UserSession.setUser(currentUser);
 
     final userId = currentUser['user_id'];
 
@@ -73,15 +76,14 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final routeUser =
-    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
-    final currentUser = widget.user ?? routeUser;
+    final currentUser = widget.user ?? routeUser ?? UserSession.user;
 
     final recommendation =
-    _homeData?['recommendation'] as Map<String, dynamic>?;
+        _homeData?['recommendation'] as Map<String, dynamic>?;
 
-    final promoCatalog =
-        (_homeData?['promo_catalog'] as List<dynamic>?) ?? [];
+    final promoCatalog = (_homeData?['promo_catalog'] as List<dynamic>?) ?? [];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -92,143 +94,136 @@ class _HomePageState extends State<HomePage> {
             _HomeHeader(user: currentUser),
             Expanded(
               child: _loading
-                  ? const Center(
-                child: CircularProgressIndicator(),
-              )
+                  ? const Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _BalanceCard(),
-                    const SizedBox(height: 20),
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _BalanceCard(),
+                          const SizedBox(height: 20),
 
-                    if (recommendation != null)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F6FA),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              recommendation['primary_hero'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.primary,
+                          if (recommendation != null)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF3F6FA),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              recommendation['suggested_action'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              recommendation['insight'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                    const SizedBox(height: 24),
-                    const _ShortcutSection(),
-                    if (_loading)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-
-                    if (!_loading && recommendation != null)
-                      _RecommendationCard(
-                        title: recommendation['primary_hero'] ?? '',
-                        action: recommendation['suggested_action'] ?? '',
-                        insight: recommendation['insight'] ?? '',
-                      ),
-                    const SizedBox(height: 18),
-
-                    _SectionTitle(
-                      title: 'e-Wallet',
-                      actionLabel: 'Lihat Semua',
-                      onTap: () {},
-                    ),
-
-                    const SizedBox(height: 12),
-                    const _WalletRow(),
-                    const SizedBox(height: 20),
-
-                    const Text(
-                      'News & Promotion',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1B2435),
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    if (promoCatalog.isEmpty)
-                      const Text(
-                        'Belum ada promo tersedia.',
-                        style: TextStyle(
-                          color: Colors.black54,
-                        ),
-                      )
-                    else
-                      Column(
-                        children: promoCatalog.map((promo) {
-                          return Container(
-                            width: double.infinity,
-                            margin:
-                            const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius:
-                              BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  promo['item_name'] ?? '',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    recommendation['primary_hero'] ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primary,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  promo['description'] ?? '',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    height: 1.4,
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    recommendation['suggested_action'] ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    recommendation['insight'] ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          );
-                        }).toList(),
+
+                          const SizedBox(height: 24),
+                          const _ShortcutSection(),
+                          if (_loading)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              child: Center(child: CircularProgressIndicator()),
+                            ),
+
+                          if (!_loading && recommendation != null)
+                            _RecommendationCard(
+                              title: recommendation['primary_hero'] ?? '',
+                              action: recommendation['suggested_action'] ?? '',
+                              insight: recommendation['insight'] ?? '',
+                            ),
+                          const SizedBox(height: 18),
+
+                          _SectionTitle(
+                            title: 'e-Wallet',
+                            actionLabel: 'Lihat Semua',
+                            onTap: () {},
+                          ),
+
+                          const SizedBox(height: 12),
+                          const _WalletRow(),
+                          const SizedBox(height: 20),
+
+                          const Text(
+                            'News & Promotion',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1B2435),
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          if (promoCatalog.isEmpty)
+                            const Text(
+                              'Belum ada promo tersedia.',
+                              style: TextStyle(color: Colors.black54),
+                            )
+                          else
+                            Column(
+                              children: promoCatalog.map((promo) {
+                                return Container(
+                                  width: double.infinity,
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        promo['item_name'] ?? '',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        promo['description'] ?? '',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                        ],
                       ),
-                  ],
-                ),
-              ),
+                    ),
             ),
             const _HomeBottomNav(),
           ],
@@ -245,8 +240,9 @@ class _HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userName = user?['nama'] ?? 'David';
-    final persona = user?['segmen_persona'] ?? '';
+    final userName = user?['nama'] ?? UserSession.userName;
+    final persona =
+        user?['persona'] ?? user?['segmen_persona'] ?? UserSession.persona;
 
     return Container(
       height: 76,
@@ -281,11 +277,7 @@ class _HomeHeader extends StatelessWidget {
           const SizedBox(width: 14),
           InkWell(
             borderRadius: BorderRadius.circular(22),
-            onTap: () => Navigator.pushNamed(
-              context,
-              ProfilePage.routeName,
-              arguments: user,
-            ),
+            onTap: () => Navigator.pushNamed(context, ProfilePage.routeName),
             child: const CircleAvatar(
               radius: 20,
               backgroundColor: Colors.white,
@@ -686,6 +678,7 @@ class _WalletCard extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _PromoTabs extends StatelessWidget {
   const _PromoTabs();
 
@@ -704,6 +697,7 @@ class _PromoTabs extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _PromoBanner extends StatelessWidget {
   const _PromoBanner({
     required this.recommendation,
@@ -715,14 +709,13 @@ class _PromoBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hero =
-        recommendation?['primary_hero'] ?? 'Promo Personal Untuk Kamu';
+    final hero = recommendation?['primary_hero'] ?? 'Promo Personal Untuk Kamu';
 
-    final action =
-        recommendation?['suggested_action'] ?? 'Cek promo terbaru';
+    final action = recommendation?['suggested_action'] ?? 'Cek promo terbaru';
 
     final insight =
-        recommendation?['insight'] ?? 'Nikmati layanan yang sesuai kebutuhanmu.';
+        recommendation?['insight'] ??
+        'Nikmati layanan yang sesuai kebutuhanmu.';
 
     final promoItems = promoCatalog.take(4).toList();
 
@@ -860,27 +853,15 @@ class _RecommendationCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
           Text(
             action,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 6),
-          Text(
-            insight,
-            style: const TextStyle(
-              fontSize: 12,
-              height: 1.4,
-            ),
-          ),
+          Text(insight, style: const TextStyle(fontSize: 12, height: 1.4)),
         ],
       ),
     );

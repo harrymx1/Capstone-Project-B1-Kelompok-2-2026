@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../home/pages/home_page.dart';
 import '../widgets/auth_button.dart';
@@ -36,28 +37,25 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final user = await AuthService.login(userId);
+      UserSession.setUser(user);
 
       if (!mounted) return;
 
-      Navigator.pushReplacementNamed(
-        context,
-        HomePage.routeName,
-        arguments: user,
-      );
+      Navigator.pushReplacementNamed(context, HomePage.routeName);
     } catch (e) {
       if (!mounted) return;
 
       final message = e.toString().replaceFirst('Exception: ', '');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } finally {
-      if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../home/pages/home_page.dart';
 import '../models/top_up_draft.dart';
@@ -11,11 +12,8 @@ class TopUpSuccessPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args =
-    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-
-    final draft = args?['draft'] as TopUpDraft;
-    final user = args?['user'] as Map<String, dynamic>?;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final draft = args is TopUpDraft ? args : TopUpDraft.empty();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -57,7 +55,7 @@ class TopUpSuccessPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    _AccountCard(user: user),
+                    const _AccountCard(),
                     const SizedBox(height: 18),
                     const Text(
                       'Transaction Details',
@@ -149,13 +147,11 @@ class _SuccessHeader extends StatelessWidget {
 }
 
 class _AccountCard extends StatelessWidget {
-  const _AccountCard({this.user});
-
-  final Map<String, dynamic>? user;
+  const _AccountCard();
 
   @override
   Widget build(BuildContext context) {
-    final userName = user?['nama'] ?? 'David';
+    final userName = UserSession.userName;
 
     return Container(
       width: double.infinity,
@@ -191,10 +187,7 @@ class _AccountCard extends StatelessWidget {
                 ),
                 Text(
                   userName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 11),
                 ),
                 const Spacer(),
                 const Text(

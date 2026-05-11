@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/withdrawal_draft.dart';
 import 'cardless_success_page.dart';
@@ -212,6 +213,8 @@ class _AccountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userName = UserSession.userName;
+
     return Container(
       width: double.infinity,
       height: 116,
@@ -220,17 +223,17 @@ class _AccountCard extends StatelessWidget {
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // TODO: replace with actual asset
-          Icon(Icons.credit_card_rounded, color: Colors.white, size: 52),
-          SizedBox(width: 10),
+          const Icon(Icons.credit_card_rounded, color: Colors.white, size: 52),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'OCTO Pay (*****6147)',
                   style: TextStyle(
                     color: Colors.white,
@@ -239,11 +242,11 @@ class _AccountCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'David',
-                  style: TextStyle(color: Colors.white, fontSize: 11),
+                  userName,
+                  style: const TextStyle(color: Colors.white, fontSize: 11),
                 ),
-                Spacer(),
-                Text(
+                const Spacer(),
+                const Text(
                   'Balance\nRp 67.670',
                   style: TextStyle(
                     color: Colors.white,

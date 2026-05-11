@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../home/pages/home_page.dart';
 import '../models/transfer_draft.dart';
@@ -56,10 +57,10 @@ class TransferSuccessPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const _ReceiptCard(
+                    _ReceiptCard(
                       alignRight: false,
                       title: 'OCTO Pay (*****6147)',
-                      subtitle: 'David',
+                      subtitle: UserSession.userName,
                     ),
                     const SizedBox(height: 12),
                     const Align(

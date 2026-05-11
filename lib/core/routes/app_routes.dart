@@ -7,7 +7,6 @@ import '../../features/auth/pages/reset_success_page.dart';
 import '../../features/auth/pages/sign_up_page.dart';
 import '../../features/auth/pages/verification_code_page.dart';
 import '../../features/bills/models/electricity_draft.dart';
-import '../../features/bills/models/top_up_draft.dart';
 import '../../features/bills/pages/bills_menu_placeholder_page.dart';
 import '../../features/bills/pages/bills_top_up_page.dart';
 import '../../features/bills/pages/electricity_bill_page.dart';
