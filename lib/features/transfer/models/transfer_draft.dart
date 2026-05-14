@@ -5,7 +5,7 @@ class TransferDraft {
     required this.amount,
     required this.message,
     this.transferMethod = 'BI-Fast',
-    this.notes = 'From David',
+    this.notes = 'From User',
   });
 
   final String destinationBank;

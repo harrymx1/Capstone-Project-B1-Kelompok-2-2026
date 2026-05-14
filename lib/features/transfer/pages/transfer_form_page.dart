@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/transfer_draft.dart';
 import '../models/transfer_schedule.dart';
@@ -18,7 +19,7 @@ class TransferFormPage extends StatefulWidget {
 class _TransferFormPageState extends State<TransferFormPage> {
   final accountController = TextEditingController(text: '0123456789');
   final amountController = TextEditingController(text: 'IDR 20.000');
-  final messageController = TextEditingController(text: 'From yanto');
+  late final TextEditingController messageController;
 
   String selectedBank = 'CIMB NIAGA';
   TransferSchedule? schedule;
@@ -42,6 +43,14 @@ class _TransferFormPageState extends State<TransferFormPage> {
     'MAYBANK',
     'SUPERBANK',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    messageController = TextEditingController(
+      text: 'From ${UserSession.userName}',
+    );
+  }
 
   @override
   void dispose() {

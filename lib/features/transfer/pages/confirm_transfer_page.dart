@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/transfer_draft.dart';
 import 'transfer_success_page.dart';
@@ -74,9 +75,9 @@ class _ConfirmTransferPageState extends State<ConfirmTransferPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const _AccountCard(
+                    _AccountCard(
                       title: 'OCTO Pay (*****6147)',
-                      subtitle: 'David',
+                      subtitle: UserSession.userName,
                       amount: 'Balance\nRp 67.670',
                     ),
                     const SizedBox(height: 16),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 
 class WealthPage extends StatefulWidget {
@@ -184,6 +185,8 @@ class _WealthAccountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userName = UserSession.userName;
+
     return Container(
       width: double.infinity,
       height: 134,
@@ -192,13 +195,13 @@ class _WealthAccountCard extends StatelessWidget {
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // TODO: replace with actual asset
-          Icon(Icons.credit_card_rounded, color: Colors.white, size: 68),
-          Spacer(),
-          Text(
+          const Icon(Icons.credit_card_rounded, color: Colors.white, size: 68),
+          const Spacer(),
+          const Text(
             'OCTO Pay (*****6147)',
             style: TextStyle(
               color: Colors.white,
@@ -206,7 +209,10 @@ class _WealthAccountCard extends StatelessWidget {
               fontWeight: FontWeight.w900,
             ),
           ),
-          Text('David', style: TextStyle(color: Colors.white, fontSize: 11)),
+          Text(
+            userName,
+            style: const TextStyle(color: Colors.white, fontSize: 11),
+          ),
         ],
       ),
     );

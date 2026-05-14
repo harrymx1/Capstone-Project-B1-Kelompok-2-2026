@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/pages/login_page.dart';
 
@@ -13,13 +14,18 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final routeUser =
-    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
-    final currentUser = user ?? routeUser;
+    final currentUser = user ?? routeUser ?? UserSession.user;
 
-    final userName = currentUser?['nama'] ?? 'David';
+    if (currentUser != null) {
+      UserSession.setUser(currentUser);
+    }
+
+    final userName = currentUser?['nama'] ?? UserSession.userName;
     final userId = currentUser?['user_id'] ?? '-';
-    final persona = currentUser?['segmen_persona'] ?? '-';
+    final persona =
+        currentUser?['persona'] ?? currentUser?['segmen_persona'] ?? '-';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -171,6 +177,7 @@ class ProfilePage extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
+                UserSession.clear();
                 Navigator.pop(dialogContext);
                 Navigator.pushNamedAndRemoveUntil(
                   context,

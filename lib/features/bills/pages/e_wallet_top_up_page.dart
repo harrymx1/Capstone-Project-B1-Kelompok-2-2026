@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/top_up_draft.dart';
 import 'top_up_success_page.dart';
@@ -18,16 +19,6 @@ class EWalletTopUpPage extends StatefulWidget {
 class _EWalletTopUpPageState extends State<EWalletTopUpPage> {
   final destinationController = TextEditingController(text: '081275432155');
   final amountController = TextEditingController(text: 'IDR 20.000');
-
-  Map<String, dynamic>? get _user {
-    final routeArgs = ModalRoute.of(context)?.settings.arguments;
-
-    if (routeArgs is Map<String, dynamic> && routeArgs.containsKey('nama')) {
-      return routeArgs;
-    }
-
-    return null;
-  }
 
   @override
   void dispose() {
@@ -170,10 +161,7 @@ class _EWalletTopUpPageState extends State<EWalletTopUpPage> {
                     Navigator.pushNamed(
                       pageContext,
                       TopUpSuccessPage.routeName,
-                      arguments: {
-                        'draft': draft,
-                        'user': _user,
-                      },
+                      arguments: draft,
                     );
                   },
                 ),
@@ -226,13 +214,11 @@ class _TopUpHeader extends StatelessWidget {
 }
 
 class _AccountCard extends StatelessWidget {
-  const _AccountCard({this.user});
-
-  final Map<String, dynamic>? user;
+  const _AccountCard();
 
   @override
   Widget build(BuildContext context) {
-    final userName = user?['nama'] ?? 'David';
+    final userName = UserSession.userName;
 
     return Container(
       width: double.infinity,
@@ -268,10 +254,7 @@ class _AccountCard extends StatelessWidget {
                 ),
                 Text(
                   userName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 11),
                 ),
                 const Spacer(),
                 const Text(

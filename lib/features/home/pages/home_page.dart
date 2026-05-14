@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../../core/services/feature_tracking_service.dart';
 import '../../../core/services/home_service.dart';
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../bills/pages/bills_top_up_page.dart';
 import '../../investment/pages/investment_page.dart';
@@ -27,6 +31,24 @@ class _HomePageState extends State<HomePage> {
   bool _loading = true;
   bool _hasLoaded = false;
 
+  void _trackFeatureClick(String featureName) {
+    final userId = UserSession.user?['user_id'];
+
+    if (userId == null) return;
+
+    unawaited(
+      FeatureTrackingService.trackFeatureClick(
+        userId: userId.toString(),
+        featureName: featureName,
+      ),
+    );
+  }
+
+  void _trackFeatureAndNavigate(String featureName, String routeName) {
+    _trackFeatureClick(featureName);
+    Navigator.pushNamed(context, routeName);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -39,9 +61,9 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadHome() async {
     final routeUser =
-    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
-    final currentUser = widget.user ?? routeUser;
+    final currentUser = widget.user ?? routeUser ?? UserSession.user;
 
     if (currentUser == null) {
       setState(() {
@@ -49,6 +71,8 @@ class _HomePageState extends State<HomePage> {
       });
       return;
     }
+
+    UserSession.setUser(currentUser);
 
     final userId = currentUser['user_id'];
 
@@ -73,15 +97,14 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final routeUser =
-    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
-    final currentUser = widget.user ?? routeUser;
+    final currentUser = widget.user ?? routeUser ?? UserSession.user;
 
     final recommendation =
-    _homeData?['recommendation'] as Map<String, dynamic>?;
+        _homeData?['recommendation'] as Map<String, dynamic>?;
 
-    final promoCatalog =
-        (_homeData?['promo_catalog'] as List<dynamic>?) ?? [];
+    final promoCatalog = (_homeData?['promo_catalog'] as List<dynamic>?) ?? [];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -92,145 +115,148 @@ class _HomePageState extends State<HomePage> {
             _HomeHeader(user: currentUser),
             Expanded(
               child: _loading
-                  ? const Center(
-                child: CircularProgressIndicator(),
-              )
+                  ? const Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _BalanceCard(),
-                    const SizedBox(height: 20),
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _BalanceCard(),
+                          const SizedBox(height: 20),
 
-                    if (recommendation != null)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F6FA),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              recommendation['primary_hero'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.primary,
+                          if (recommendation != null)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF3F6FA),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              recommendation['suggested_action'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              recommendation['insight'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                    const SizedBox(height: 24),
-                    const _ShortcutSection(),
-                    if (_loading)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-
-                    if (!_loading && recommendation != null)
-                      _RecommendationCard(
-                        title: recommendation['primary_hero'] ?? '',
-                        action: recommendation['suggested_action'] ?? '',
-                        insight: recommendation['insight'] ?? '',
-                      ),
-                    const SizedBox(height: 18),
-
-                    _SectionTitle(
-                      title: 'e-Wallet',
-                      actionLabel: 'Lihat Semua',
-                      onTap: () {},
-                    ),
-
-                    const SizedBox(height: 12),
-                    const _WalletRow(),
-                    const SizedBox(height: 20),
-
-                    const Text(
-                      'News & Promotion',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1B2435),
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    if (promoCatalog.isEmpty)
-                      const Text(
-                        'Belum ada promo tersedia.',
-                        style: TextStyle(
-                          color: Colors.black54,
-                        ),
-                      )
-                    else
-                      Column(
-                        children: promoCatalog.map((promo) {
-                          return Container(
-                            width: double.infinity,
-                            margin:
-                            const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius:
-                              BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  promo['item_name'] ?? '',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    recommendation['primary_hero'] ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primary,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  promo['description'] ?? '',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    height: 1.4,
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    recommendation['suggested_action'] ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    recommendation['insight'] ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          );
-                        }).toList(),
+
+                          const SizedBox(height: 24),
+                          _ShortcutSection(
+                            onShortcutTap: _trackFeatureAndNavigate,
+                          ),
+                          if (_loading)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              child: Center(child: CircularProgressIndicator()),
+                            ),
+
+                          if (!_loading && recommendation != null)
+                            _RecommendationCard(
+                              title: recommendation['primary_hero'] ?? '',
+                              action: recommendation['suggested_action'] ?? '',
+                              insight: recommendation['insight'] ?? '',
+                            ),
+                          const SizedBox(height: 18),
+
+                          _SectionTitle(
+                            title: 'e-Wallet',
+                            actionLabel: 'Lihat Semua',
+                            onTap: () => _trackFeatureAndNavigate(
+                              'E-Wallet',
+                              BillsTopUpPage.routeName,
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+                          _WalletRow(
+                            onTap: () => _trackFeatureAndNavigate(
+                              'E-Wallet',
+                              BillsTopUpPage.routeName,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          const Text(
+                            'News & Promotion',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1B2435),
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          if (promoCatalog.isEmpty)
+                            const Text(
+                              'Belum ada promo tersedia.',
+                              style: TextStyle(color: Colors.black54),
+                            )
+                          else
+                            Column(
+                              children: promoCatalog.map((promo) {
+                                return Container(
+                                  width: double.infinity,
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        promo['item_name'] ?? '',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        promo['description'] ?? '',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                        ],
                       ),
-                  ],
-                ),
-              ),
+                    ),
             ),
-            const _HomeBottomNav(),
+            _HomeBottomNav(onFeatureTap: _trackFeatureAndNavigate),
           ],
         ),
       ),
@@ -245,8 +271,9 @@ class _HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userName = user?['nama'] ?? 'David';
-    final persona = user?['segmen_persona'] ?? '';
+    final userName = user?['nama'] ?? UserSession.userName;
+    final persona =
+        user?['persona'] ?? user?['segmen_persona'] ?? UserSession.persona;
 
     return Container(
       height: 76,
@@ -281,11 +308,7 @@ class _HomeHeader extends StatelessWidget {
           const SizedBox(width: 14),
           InkWell(
             borderRadius: BorderRadius.circular(22),
-            onTap: () => Navigator.pushNamed(
-              context,
-              ProfilePage.routeName,
-              arguments: user,
-            ),
+            onTap: () => Navigator.pushNamed(context, ProfilePage.routeName),
             child: const CircleAvatar(
               radius: 20,
               backgroundColor: Colors.white,
@@ -366,7 +389,9 @@ class _BalanceCard extends StatelessWidget {
 }
 
 class _ShortcutSection extends StatelessWidget {
-  const _ShortcutSection();
+  const _ShortcutSection({required this.onShortcutTap});
+
+  final void Function(String featureName, String routeName) onShortcutTap;
 
   @override
   Widget build(BuildContext context) {
@@ -391,33 +416,42 @@ class _ShortcutSection extends StatelessWidget {
           mainAxisSpacing: 4,
           crossAxisSpacing: 18,
           childAspectRatio: 0.82,
-          children: const [
+          children: [
             _ShortcutItem(
               icon: Icons.send_outlined,
               label: 'Transfer',
+              featureName: 'Transfer',
               routeName: TransferPage.routeName,
+              onTap: onShortcutTap,
             ),
             _ShortcutItem(
               icon: Icons.receipt_long_outlined,
               label: 'Bills &\nTop Up',
+              featureName: 'Bills',
               routeName: BillsTopUpPage.routeName,
+              onTap: onShortcutTap,
             ),
-            _ShortcutItem(
+            const _ShortcutItem(
               icon: Icons.money_outlined,
               label: 'Cardless',
+              featureName: 'Cardless',
               routeName: CardlessPage.routeName,
             ),
-            SizedBox.shrink(),
+            const SizedBox.shrink(),
             _ShortcutItem(
               icon: Icons.account_balance_wallet_outlined,
               label: 'Investment',
+              featureName: 'Investment',
               routeName: InvestmentPage.routeName,
+              onTap: onShortcutTap,
             ),
             _ShortcutItem(
               icon: Icons.more_horiz_rounded,
               label: 'Lainnya',
+              featureName: 'More Services',
               routeName: MoreServicesPage.routeName,
               muted: true,
+              onTap: onShortcutTap,
             ),
           ],
         ),
@@ -461,14 +495,18 @@ class _ShortcutItem extends StatelessWidget {
   const _ShortcutItem({
     required this.icon,
     required this.label,
+    required this.featureName,
     required this.routeName,
     this.muted = false,
+    this.onTap,
   });
 
   final IconData icon;
   final String label;
+  final String featureName;
   final String routeName;
   final bool muted;
+  final void Function(String featureName, String routeName)? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -477,7 +515,15 @@ class _ShortcutItem extends StatelessWidget {
       label: label.replaceAll('\n', ' '),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.pushNamed(context, routeName),
+        onTap: () {
+          final handler = onTap;
+          if (handler != null) {
+            handler(featureName, routeName);
+            return;
+          }
+
+          Navigator.pushNamed(context, routeName);
+        },
         child: Column(
           children: [
             Container(
@@ -566,27 +612,31 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _WalletRow extends StatelessWidget {
-  const _WalletRow();
+  const _WalletRow({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: const [
+      children: [
         Expanded(
           child: _WalletCard(
             title: 'OCTO Pay',
             subtitle: 'Rp •••••••',
             leadingIcon: Icons.account_balance_wallet,
-            trailing: Icon(Icons.add, color: AppColors.primary, size: 18),
+            trailing: const Icon(Icons.add, color: AppColors.primary, size: 18),
+            onTap: onTap,
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           child: _WalletCard(
             title: 'gopay',
             subtitle: 'Connect',
             leadingIcon: Icons.wallet,
             actionStyle: true,
+            onTap: onTap,
           ),
         ),
       ],
@@ -601,6 +651,7 @@ class _WalletCard extends StatelessWidget {
     required this.leadingIcon,
     this.trailing,
     this.actionStyle = false,
+    this.onTap,
   });
 
   final String title;
@@ -608,84 +659,92 @@ class _WalletCard extends StatelessWidget {
   final IconData leadingIcon;
   final Widget? trailing;
   final bool actionStyle;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 80,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8E8E8),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1F000000),
-            blurRadius: 6,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              // TODO: replace with actual asset
-              Icon(leadingIcon, color: AppColors.primary, size: 18),
-              const SizedBox(width: 3),
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: title == 'gopay' ? Colors.black : AppColors.primary,
-                    fontSize: title == 'gopay' ? 21 : 12,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              ?trailing,
-            ],
-          ),
-          const Spacer(),
-          if (actionStyle)
-            Container(
-              height: 34,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                subtitle,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            )
-          else
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        height: 80,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8E8E8),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x1F000000),
+              blurRadius: 6,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Row(
               children: [
-                const Icon(Icons.visibility_off_outlined, size: 17),
-                const SizedBox(width: 5),
-                Text(
+                // TODO: replace with actual asset
+                Icon(leadingIcon, color: AppColors.primary, size: 18),
+                const SizedBox(width: 3),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: title == 'gopay'
+                          ? Colors.black
+                          : AppColors.primary,
+                      fontSize: title == 'gopay' ? 21 : 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                ?trailing,
+              ],
+            ),
+            const Spacer(),
+            if (actionStyle)
+              Container(
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
                   subtitle,
                   style: const TextStyle(
-                    fontSize: 12,
+                    color: Colors.white,
+                    fontSize: 13,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-              ],
-            ),
-        ],
+              )
+            else
+              Row(
+                children: [
+                  const Icon(Icons.visibility_off_outlined, size: 17),
+                  const SizedBox(width: 5),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
+// ignore: unused_element
 class _PromoTabs extends StatelessWidget {
   const _PromoTabs();
 
@@ -704,6 +763,7 @@ class _PromoTabs extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _PromoBanner extends StatelessWidget {
   const _PromoBanner({
     required this.recommendation,
@@ -715,14 +775,13 @@ class _PromoBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hero =
-        recommendation?['primary_hero'] ?? 'Promo Personal Untuk Kamu';
+    final hero = recommendation?['primary_hero'] ?? 'Promo Personal Untuk Kamu';
 
-    final action =
-        recommendation?['suggested_action'] ?? 'Cek promo terbaru';
+    final action = recommendation?['suggested_action'] ?? 'Cek promo terbaru';
 
     final insight =
-        recommendation?['insight'] ?? 'Nikmati layanan yang sesuai kebutuhanmu.';
+        recommendation?['insight'] ??
+        'Nikmati layanan yang sesuai kebutuhanmu.';
 
     final promoItems = promoCatalog.take(4).toList();
 
@@ -860,27 +919,15 @@ class _RecommendationCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
           Text(
             action,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 6),
-          Text(
-            insight,
-            style: const TextStyle(
-              fontSize: 12,
-              height: 1.4,
-            ),
-          ),
+          Text(insight, style: const TextStyle(fontSize: 12, height: 1.4)),
         ],
       ),
     );
@@ -888,7 +935,9 @@ class _RecommendationCard extends StatelessWidget {
 }
 
 class _HomeBottomNav extends StatelessWidget {
-  const _HomeBottomNav();
+  const _HomeBottomNav({required this.onFeatureTap});
+
+  final void Function(String featureName, String routeName) onFeatureTap;
 
   @override
   Widget build(BuildContext context) {
@@ -935,7 +984,7 @@ class _HomeBottomNav extends StatelessWidget {
           _NavItem(
             icon: Icons.storage_rounded,
             label: 'Wealth',
-            onTap: () => Navigator.pushNamed(context, WealthPage.routeName),
+            onTap: () => onFeatureTap('Wealth', WealthPage.routeName),
           ),
           _NavItem(
             icon: Icons.settings_outlined,
