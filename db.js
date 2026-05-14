@@ -1,22 +1,27 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 
-// Inisialisasi koneksi menggunakan data dari file .env
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // SSL diperlukan untuk koneksi aman ke database cloud seperti Supabase
   ssl: {
     rejectUnauthorized: false,
   },
 });
 
-// Menambahkan log sederhana untuk memantau jika ada error pada pool
+// Tes koneksi saat aplikasi pertama kali jalan
+pool.connect((err, client, release) => {
+  if (err) {
+    return console.error("Gagal menyambung ke Database:", err.stack);
+  }
+  console.log("Database Terhubung dengan Aman!");
+  release();
+});
+
 pool.on("error", (err) => {
   console.error("Unexpected error on idle client", err);
   process.exit(-1);
 });
 
 module.exports = {
-  // Fungsi query global yang akan digunakan di file index.js
   query: (text, params) => pool.query(text, params),
 };
