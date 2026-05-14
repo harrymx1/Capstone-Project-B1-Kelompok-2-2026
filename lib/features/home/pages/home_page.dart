@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../../core/services/feature_tracking_service.dart';
 import '../../../core/services/home_service.dart';
 import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
@@ -27,6 +30,24 @@ class _HomePageState extends State<HomePage> {
   Map<String, dynamic>? _homeData;
   bool _loading = true;
   bool _hasLoaded = false;
+
+  void _trackFeatureClick(String featureName) {
+    final userId = UserSession.user?['user_id'];
+
+    if (userId == null) return;
+
+    unawaited(
+      FeatureTrackingService.trackFeatureClick(
+        userId: userId.toString(),
+        featureName: featureName,
+      ),
+    );
+  }
+
+  void _trackFeatureAndNavigate(String featureName, String routeName) {
+    _trackFeatureClick(featureName);
+    Navigator.pushNamed(context, routeName);
+  }
 
   @override
   void didChangeDependencies() {
@@ -143,7 +164,9 @@ class _HomePageState extends State<HomePage> {
                             ),
 
                           const SizedBox(height: 24),
-                          const _ShortcutSection(),
+                          _ShortcutSection(
+                            onShortcutTap: _trackFeatureAndNavigate,
+                          ),
                           if (_loading)
                             const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
@@ -161,11 +184,19 @@ class _HomePageState extends State<HomePage> {
                           _SectionTitle(
                             title: 'e-Wallet',
                             actionLabel: 'Lihat Semua',
-                            onTap: () {},
+                            onTap: () => _trackFeatureAndNavigate(
+                              'E-Wallet',
+                              BillsTopUpPage.routeName,
+                            ),
                           ),
 
                           const SizedBox(height: 12),
-                          const _WalletRow(),
+                          _WalletRow(
+                            onTap: () => _trackFeatureAndNavigate(
+                              'E-Wallet',
+                              BillsTopUpPage.routeName,
+                            ),
+                          ),
                           const SizedBox(height: 20),
 
                           const Text(
@@ -225,7 +256,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
             ),
-            const _HomeBottomNav(),
+            _HomeBottomNav(onFeatureTap: _trackFeatureAndNavigate),
           ],
         ),
       ),
@@ -358,7 +389,9 @@ class _BalanceCard extends StatelessWidget {
 }
 
 class _ShortcutSection extends StatelessWidget {
-  const _ShortcutSection();
+  const _ShortcutSection({required this.onShortcutTap});
+
+  final void Function(String featureName, String routeName) onShortcutTap;
 
   @override
   Widget build(BuildContext context) {
@@ -383,33 +416,42 @@ class _ShortcutSection extends StatelessWidget {
           mainAxisSpacing: 4,
           crossAxisSpacing: 18,
           childAspectRatio: 0.82,
-          children: const [
+          children: [
             _ShortcutItem(
               icon: Icons.send_outlined,
               label: 'Transfer',
+              featureName: 'Transfer',
               routeName: TransferPage.routeName,
+              onTap: onShortcutTap,
             ),
             _ShortcutItem(
               icon: Icons.receipt_long_outlined,
               label: 'Bills &\nTop Up',
+              featureName: 'Bills',
               routeName: BillsTopUpPage.routeName,
+              onTap: onShortcutTap,
             ),
-            _ShortcutItem(
+            const _ShortcutItem(
               icon: Icons.money_outlined,
               label: 'Cardless',
+              featureName: 'Cardless',
               routeName: CardlessPage.routeName,
             ),
-            SizedBox.shrink(),
+            const SizedBox.shrink(),
             _ShortcutItem(
               icon: Icons.account_balance_wallet_outlined,
               label: 'Investment',
+              featureName: 'Investment',
               routeName: InvestmentPage.routeName,
+              onTap: onShortcutTap,
             ),
             _ShortcutItem(
               icon: Icons.more_horiz_rounded,
               label: 'Lainnya',
+              featureName: 'More Services',
               routeName: MoreServicesPage.routeName,
               muted: true,
+              onTap: onShortcutTap,
             ),
           ],
         ),
@@ -453,14 +495,18 @@ class _ShortcutItem extends StatelessWidget {
   const _ShortcutItem({
     required this.icon,
     required this.label,
+    required this.featureName,
     required this.routeName,
     this.muted = false,
+    this.onTap,
   });
 
   final IconData icon;
   final String label;
+  final String featureName;
   final String routeName;
   final bool muted;
+  final void Function(String featureName, String routeName)? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -469,7 +515,15 @@ class _ShortcutItem extends StatelessWidget {
       label: label.replaceAll('\n', ' '),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.pushNamed(context, routeName),
+        onTap: () {
+          final handler = onTap;
+          if (handler != null) {
+            handler(featureName, routeName);
+            return;
+          }
+
+          Navigator.pushNamed(context, routeName);
+        },
         child: Column(
           children: [
             Container(
@@ -558,27 +612,31 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _WalletRow extends StatelessWidget {
-  const _WalletRow();
+  const _WalletRow({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: const [
+      children: [
         Expanded(
           child: _WalletCard(
             title: 'OCTO Pay',
             subtitle: 'Rp •••••••',
             leadingIcon: Icons.account_balance_wallet,
-            trailing: Icon(Icons.add, color: AppColors.primary, size: 18),
+            trailing: const Icon(Icons.add, color: AppColors.primary, size: 18),
+            onTap: onTap,
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           child: _WalletCard(
             title: 'gopay',
             subtitle: 'Connect',
             leadingIcon: Icons.wallet,
             actionStyle: true,
+            onTap: onTap,
           ),
         ),
       ],
@@ -593,6 +651,7 @@ class _WalletCard extends StatelessWidget {
     required this.leadingIcon,
     this.trailing,
     this.actionStyle = false,
+    this.onTap,
   });
 
   final String title;
@@ -600,79 +659,86 @@ class _WalletCard extends StatelessWidget {
   final IconData leadingIcon;
   final Widget? trailing;
   final bool actionStyle;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 80,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8E8E8),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1F000000),
-            blurRadius: 6,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              // TODO: replace with actual asset
-              Icon(leadingIcon, color: AppColors.primary, size: 18),
-              const SizedBox(width: 3),
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: title == 'gopay' ? Colors.black : AppColors.primary,
-                    fontSize: title == 'gopay' ? 21 : 12,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              ?trailing,
-            ],
-          ),
-          const Spacer(),
-          if (actionStyle)
-            Container(
-              height: 34,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                subtitle,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            )
-          else
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        height: 80,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8E8E8),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x1F000000),
+              blurRadius: 6,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Row(
               children: [
-                const Icon(Icons.visibility_off_outlined, size: 17),
-                const SizedBox(width: 5),
-                Text(
+                // TODO: replace with actual asset
+                Icon(leadingIcon, color: AppColors.primary, size: 18),
+                const SizedBox(width: 3),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: title == 'gopay'
+                          ? Colors.black
+                          : AppColors.primary,
+                      fontSize: title == 'gopay' ? 21 : 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                ?trailing,
+              ],
+            ),
+            const Spacer(),
+            if (actionStyle)
+              Container(
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
                   subtitle,
                   style: const TextStyle(
-                    fontSize: 12,
+                    color: Colors.white,
+                    fontSize: 13,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-              ],
-            ),
-        ],
+              )
+            else
+              Row(
+                children: [
+                  const Icon(Icons.visibility_off_outlined, size: 17),
+                  const SizedBox(width: 5),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -869,7 +935,9 @@ class _RecommendationCard extends StatelessWidget {
 }
 
 class _HomeBottomNav extends StatelessWidget {
-  const _HomeBottomNav();
+  const _HomeBottomNav({required this.onFeatureTap});
+
+  final void Function(String featureName, String routeName) onFeatureTap;
 
   @override
   Widget build(BuildContext context) {
@@ -916,7 +984,7 @@ class _HomeBottomNav extends StatelessWidget {
           _NavItem(
             icon: Icons.storage_rounded,
             label: 'Wealth',
-            onTap: () => Navigator.pushNamed(context, WealthPage.routeName),
+            onTap: () => onFeatureTap('Wealth', WealthPage.routeName),
           ),
           _NavItem(
             icon: Icons.settings_outlined,
