@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../../core/services/feature_click_service.dart';
+import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import 'bills_menu_placeholder_page.dart';
 import 'electricity_bill_page.dart';
@@ -35,6 +39,19 @@ class BillsTopUpPage extends StatelessWidget {
     'Electricity Bill',
     'Non-Electricity Bill',
   ];
+
+  void _trackFeatureClick(String featureName) {
+    final userId = UserSession.user?['user_id'];
+
+    if (userId == null) return;
+
+    unawaited(
+      FeatureClickService.trackFeatureClick(
+        userId: userId.toString(),
+        featureName: featureName,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,61 +94,87 @@ class BillsTopUpPage extends StatelessWidget {
                         _BillMenuItem(
                           icon: Icons.credit_card_rounded,
                           label: 'e-Wallet',
-                          onTap: () => _showEWalletPicker(context),
+                          onTap: () {
+                            _trackFeatureClick('topup_ewallet');
+                            _showEWalletPicker(context);
+                          },
                         ),
                         _BillMenuItem(
                           icon: Icons.phone_android_rounded,
                           label: 'Phone/Mobile',
-                          onTap: () =>
-                              _openPlaceholder(context, 'Phone/Mobile'),
+                          onTap: () {
+                            _trackFeatureClick('topup');
+                            _openPlaceholder(context, 'Phone/Mobile');
+                          },
                         ),
                         _BillMenuItem(
                           icon: Icons.receipt_long_rounded,
                           label: 'Tax',
-                          onTap: () => _openPlaceholder(context, 'Tax'),
+                          onTap: () {
+                            _trackFeatureClick('bills');
+                            _openPlaceholder(context, 'Tax');
+                          },
                         ),
                         _BillMenuItem(
                           icon: Icons.water_drop_outlined,
                           label: 'PAM/PDAM',
-                          onTap: () => _openPlaceholder(context, 'PAM/PDAM'),
+                          onTap: () {
+                            _trackFeatureClick('bills');
+                            _openPlaceholder(context, 'PAM/PDAM');
+                          },
                         ),
                         _BillMenuItem(
                           icon: Icons.shopping_cart_outlined,
                           label: 'e-Commerce\n& Payment',
-                          onTap: () =>
-                              _openPlaceholder(context, 'e-Commerce & Payment'),
+                          onTap: () {
+                            _trackFeatureClick('topup');
+                            _openPlaceholder(context, 'e-Commerce & Payment');
+                          },
                         ),
                         _BillMenuItem(
                           icon: Icons.bolt_rounded,
                           label: 'Electricity',
-                          onTap: () => _showElectricityPicker(context),
+                          onTap: () {
+                            _trackFeatureClick('bills');
+                            _showElectricityPicker(context);
+                          },
                         ),
                         _BillMenuItem(
                           icon: Icons.payment_rounded,
                           label: 'Credit Card',
-                          onTap: () => _openPlaceholder(context, 'Credit Card'),
+                          onTap: () {
+                            _trackFeatureClick('bills');
+                            _openPlaceholder(context, 'Credit Card');
+                          },
                         ),
                         _BillMenuItem(
                           icon: Icons.request_quote_outlined,
                           label: 'Virtual\nAccount',
-                          onTap: () =>
-                              _openPlaceholder(context, 'Virtual Account'),
+                          onTap: () {
+                            _trackFeatureClick('bills');
+                            _openPlaceholder(context, 'Virtual Account');
+                          },
                         ),
                         _BillMenuItem(
                           icon: Icons.wifi_rounded,
                           label: 'Internet/\nCable TV',
-                          onTap: () =>
-                              _openPlaceholder(context, 'Internet/Cable TV'),
+                          onTap: () {
+                            _trackFeatureClick('bills');
+                            _openPlaceholder(context, 'Internet/Cable TV');
+                          },
                         ),
                         _BillMenuItem(
                           icon: Icons.health_and_safety_outlined,
                           label: 'Insurance',
-                          onTap: () => _openPlaceholder(context, 'Insurance'),
+                          onTap: () {
+                            _trackFeatureClick('bills');
+                            _openPlaceholder(context, 'Insurance');
+                          },
                         ),
                       ],
                     ),
                     const SizedBox(height: 44),
-                    const _PromoBanner(),
+                    _PromoBanner(onTap: () => _trackFeatureClick('promo')),
                     const SizedBox(height: 56),
                     const Text(
                       'Your saved favorites',
@@ -392,54 +435,63 @@ class _BillMenuItem extends StatelessWidget {
 }
 
 class _PromoBanner extends StatelessWidget {
-  const _PromoBanner();
+  const _PromoBanner({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 102,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          Container(
-            width: MediaQuery.of(context).size.width - 88,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD71920),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'TOP UP & PAY BILLS ON OCTO\nSAVE UP TO HUNDREDS OF\nTHOUSAND RUPIAH',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      height: 1.25,
-                      fontWeight: FontWeight.w900,
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: SizedBox(
+        height: 102,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width - 88,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD71920),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'TOP UP & PAY BILLS ON OCTO\nSAVE UP TO HUNDREDS OF\nTHOUSAND RUPIAH',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        height: 1.25,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
-                ),
-                // TODO: replace with actual asset
-                const Icon(
-                  Icons.phone_android_rounded,
-                  color: Colors.white,
-                  size: 58,
-                ),
-              ],
+                  // TODO: replace with actual asset
+                  const Icon(
+                    Icons.phone_android_rounded,
+                    color: Colors.white,
+                    size: 58,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 18),
-          Container(
-            width: 90,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE87445),
-              borderRadius: BorderRadius.circular(8),
+            const SizedBox(width: 18),
+            Container(
+              width: 90,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE87445),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.receipt_long_rounded,
+                color: Colors.white,
+              ),
             ),
-            child: const Icon(Icons.receipt_long_rounded, color: Colors.white),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

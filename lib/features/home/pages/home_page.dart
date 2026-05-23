@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../core/services/feature_tracking_service.dart';
+import '../../../core/services/feature_click_service.dart';
 import '../../../core/services/home_service.dart';
 import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
     if (userId == null) return;
 
     unawaited(
-      FeatureTrackingService.trackFeatureClick(
+      FeatureClickService.trackFeatureClick(
         userId: userId.toString(),
         featureName: featureName,
       ),
@@ -112,7 +112,10 @@ class _HomePageState extends State<HomePage> {
         bottom: false,
         child: Column(
           children: [
-            _HomeHeader(user: currentUser),
+            _HomeHeader(
+              user: currentUser,
+              onNotificationTap: () => _trackFeatureClick('notification'),
+            ),
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
@@ -178,6 +181,7 @@ class _HomePageState extends State<HomePage> {
                               title: recommendation['primary_hero'] ?? '',
                               action: recommendation['suggested_action'] ?? '',
                               insight: recommendation['insight'] ?? '',
+                              onTap: () => _trackFeatureClick('promo'),
                             ),
                           const SizedBox(height: 18),
 
@@ -185,7 +189,7 @@ class _HomePageState extends State<HomePage> {
                             title: 'e-Wallet',
                             actionLabel: 'Lihat Semua',
                             onTap: () => _trackFeatureAndNavigate(
-                              'E-Wallet',
+                              'topup_ewallet',
                               BillsTopUpPage.routeName,
                             ),
                           ),
@@ -193,7 +197,7 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(height: 12),
                           _WalletRow(
                             onTap: () => _trackFeatureAndNavigate(
-                              'E-Wallet',
+                              'topup_ewallet',
                               BillsTopUpPage.routeName,
                             ),
                           ),
@@ -218,36 +222,40 @@ class _HomePageState extends State<HomePage> {
                           else
                             Column(
                               children: promoCatalog.map((promo) {
-                                return Container(
-                                  width: double.infinity,
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        promo['item_name'] ?? '',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w800,
+                                return InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () => _trackFeatureClick('promo'),
+                                  child: Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          promo['item_name'] ?? '',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w800,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        promo['description'] ?? '',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          height: 1.4,
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          promo['description'] ?? '',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            height: 1.4,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 );
                               }).toList(),
@@ -256,7 +264,10 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
             ),
-            _HomeBottomNav(onFeatureTap: _trackFeatureAndNavigate),
+            _HomeBottomNav(
+              onFeatureTap: _trackFeatureAndNavigate,
+              onTrackFeature: _trackFeatureClick,
+            ),
           ],
         ),
       ),
@@ -265,9 +276,10 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _HomeHeader extends StatelessWidget {
-  const _HomeHeader({this.user});
+  const _HomeHeader({this.user, required this.onNotificationTap});
 
   final Map<String, dynamic>? user;
+  final VoidCallback onNotificationTap;
 
   @override
   Widget build(BuildContext context) {
@@ -300,10 +312,14 @@ class _HomeHeader extends StatelessWidget {
               ),
             ),
           ),
-          const Icon(
-            Icons.notifications_none_rounded,
-            color: Colors.white,
-            size: 28,
+          InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: onNotificationTap,
+            child: const Icon(
+              Icons.notifications_none_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
           ),
           const SizedBox(width: 14),
           InkWell(
@@ -420,14 +436,14 @@ class _ShortcutSection extends StatelessWidget {
             _ShortcutItem(
               icon: Icons.send_outlined,
               label: 'Transfer',
-              featureName: 'Transfer',
+              featureName: 'transfer',
               routeName: TransferPage.routeName,
               onTap: onShortcutTap,
             ),
             _ShortcutItem(
               icon: Icons.receipt_long_outlined,
               label: 'Bills &\nTop Up',
-              featureName: 'Bills',
+              featureName: 'topup',
               routeName: BillsTopUpPage.routeName,
               onTap: onShortcutTap,
             ),
@@ -441,14 +457,14 @@ class _ShortcutSection extends StatelessWidget {
             _ShortcutItem(
               icon: Icons.account_balance_wallet_outlined,
               label: 'Investment',
-              featureName: 'Investment',
+              featureName: 'investment',
               routeName: InvestmentPage.routeName,
               onTap: onShortcutTap,
             ),
             _ShortcutItem(
               icon: Icons.more_horiz_rounded,
               label: 'Lainnya',
-              featureName: 'More Services',
+              featureName: 'more_services',
               routeName: MoreServicesPage.routeName,
               muted: true,
               onTap: onShortcutTap,
@@ -889,55 +905,65 @@ class _RecommendationCard extends StatelessWidget {
     required this.title,
     required this.action,
     required this.insight,
+    required this.onTap,
   });
 
   final String title;
   final String action;
   final String insight;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 18),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF4F4F4),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Recommended For You',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.primary,
-              fontWeight: FontWeight.w800,
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 18),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF4F4F4),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Recommended For You',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            action,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 6),
-          Text(insight, style: const TextStyle(fontSize: 12, height: 1.4)),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              action,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(insight, style: const TextStyle(fontSize: 12, height: 1.4)),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _HomeBottomNav extends StatelessWidget {
-  const _HomeBottomNav({required this.onFeatureTap});
+  const _HomeBottomNav({
+    required this.onFeatureTap,
+    required this.onTrackFeature,
+  });
 
   final void Function(String featureName, String routeName) onFeatureTap;
+  final void Function(String featureName) onTrackFeature;
 
   @override
   Widget build(BuildContext context) {
@@ -975,16 +1001,19 @@ class _HomeBottomNav extends StatelessWidget {
             icon: Icons.qr_code_scanner_rounded,
             label: 'QRIS',
             blue: true,
-            onTap: () => Navigator.pushNamed(
-              context,
-              BottomNavPlaceholderPage.routeName,
-              arguments: 'QRIS',
-            ),
+            onTap: () {
+              onTrackFeature('qris');
+              Navigator.pushNamed(
+                context,
+                BottomNavPlaceholderPage.routeName,
+                arguments: 'QRIS',
+              );
+            },
           ),
           _NavItem(
             icon: Icons.storage_rounded,
             label: 'Wealth',
-            onTap: () => onFeatureTap('Wealth', WealthPage.routeName),
+            onTap: () => onFeatureTap('wealth', WealthPage.routeName),
           ),
           _NavItem(
             icon: Icons.settings_outlined,
