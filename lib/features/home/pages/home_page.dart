@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/services/feature_click_service.dart';
+import '../../../core/services/feature_tracking_service.dart';
 import '../../../core/services/home_service.dart';
 import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
@@ -28,6 +29,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   Map<String, dynamic>? _homeData;
+  String? _recommendationReason;
   bool _loading = true;
   bool _hasLoaded = false;
 
@@ -47,6 +49,62 @@ class _HomePageState extends State<HomePage> {
   void _trackFeatureAndNavigate(String featureName, String routeName) {
     _trackFeatureClick(featureName);
     Navigator.pushNamed(context, routeName);
+  }
+
+  void _trackPromoAudit(String promoName) {
+    final userId = UserSession.user?['user_id'];
+
+    if (userId == null) return;
+
+    unawaited(
+      FeatureTrackingService.trackPromoClick(
+        userId: userId.toString(),
+        promoName: promoName,
+      ),
+    );
+  }
+
+  void _showXaiDialog(String? reason) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            'Kenapa saya melihat ini?',
+            style: TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          content: Text(
+            reason ?? '',
+            style: const TextStyle(
+              color: AppColors.text,
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Tutup',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _handleXaiCardTap(String promoName) {
+    _trackFeatureClick('promo');
+    _trackPromoAudit(promoName);
+    _showXaiDialog(_recommendationReason);
   }
 
   @override
@@ -78,11 +136,22 @@ class _HomePageState extends State<HomePage> {
 
     try {
       final result = await HomeService.getHomeData(userId);
+      final userProfile = result['user_profile'];
+      final recommendation = result['recommendation'];
+
+      if (userProfile is Map<String, dynamic>) {
+        final updatedUser = {...currentUser, ...userProfile};
+        updatedUser['user_id'] ??= userId;
+        UserSession.setUser(updatedUser);
+      }
 
       if (!mounted) return;
 
       setState(() {
         _homeData = result;
+        _recommendationReason = recommendation is Map<String, dynamic>
+            ? recommendation['reason']?.toString()
+            : null;
         _loading = false;
       });
     } catch (_) {
@@ -99,7 +168,11 @@ class _HomePageState extends State<HomePage> {
     final routeUser =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
-    final currentUser = widget.user ?? routeUser ?? UserSession.user;
+    final sessionUser = UserSession.user;
+    final homeUserProfile = _homeData?['user_profile'];
+    final currentUser = homeUserProfile is Map<String, dynamic>
+        ? {...?sessionUser, ...homeUserProfile}
+        : widget.user ?? routeUser ?? sessionUser;
 
     final recommendation =
         _homeData?['recommendation'] as Map<String, dynamic>?;
@@ -128,41 +201,48 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(height: 20),
 
                           if (recommendation != null)
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF3F6FA),
-                                borderRadius: BorderRadius.circular(12),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () => _handleXaiCardTap(
+                                recommendation['primary_hero']?.toString() ??
+                                    '',
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    recommendation['primary_hero'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.primary,
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF3F6FA),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      recommendation['primary_hero'] ?? '',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.primary,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    recommendation['suggested_action'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      recommendation['suggested_action'] ?? '',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    recommendation['insight'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.black54,
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      recommendation['insight'] ?? '',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black54,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
 
@@ -181,7 +261,11 @@ class _HomePageState extends State<HomePage> {
                               title: recommendation['primary_hero'] ?? '',
                               action: recommendation['suggested_action'] ?? '',
                               insight: recommendation['insight'] ?? '',
-                              onTap: () => _trackFeatureClick('promo'),
+                              reason: _recommendationReason,
+                              onTap: () => _handleXaiCardTap(
+                                recommendation['primary_hero']?.toString() ??
+                                    '',
+                              ),
                             ),
                           const SizedBox(height: 18),
 
@@ -222,9 +306,12 @@ class _HomePageState extends State<HomePage> {
                           else
                             Column(
                               children: promoCatalog.map((promo) {
+                                final promoName =
+                                    promo['item_name']?.toString() ?? '';
+
                                 return InkWell(
                                   borderRadius: BorderRadius.circular(12),
-                                  onTap: () => _trackFeatureClick('promo'),
+                                  onTap: () => _handleXaiCardTap(promoName),
                                   child: Container(
                                     width: double.infinity,
                                     margin: const EdgeInsets.only(bottom: 12),
@@ -760,196 +847,67 @@ class _WalletCard extends StatelessWidget {
   }
 }
 
-// ignore: unused_element
-class _PromoTabs extends StatelessWidget {
-  const _PromoTabs();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        _Pill(label: 'All', selected: true),
-        SizedBox(width: 6),
-        _Pill(label: 'Promo'),
-        SizedBox(width: 6),
-        _Pill(label: 'News'),
-        Spacer(),
-      ],
-    );
-  }
-}
-
-// ignore: unused_element
-class _PromoBanner extends StatelessWidget {
-  const _PromoBanner({
-    required this.recommendation,
-    required this.promoCatalog,
-  });
-
-  final Map<String, dynamic>? recommendation;
-  final List<dynamic> promoCatalog;
-
-  @override
-  Widget build(BuildContext context) {
-    final hero = recommendation?['primary_hero'] ?? 'Promo Personal Untuk Kamu';
-
-    final action = recommendation?['suggested_action'] ?? 'Cek promo terbaru';
-
-    final insight =
-        recommendation?['insight'] ??
-        'Nikmati layanan yang sesuai kebutuhanmu.';
-
-    final promoItems = promoCatalog.take(4).toList();
-
-    return SizedBox(
-      height: 170,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          Container(
-            width: MediaQuery.of(context).size.width - 72,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 6,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        hero,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        action,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        insight,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      for (final item in promoItems)
-                        _PromoLine(item['item_name'] ?? ''),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  flex: 4,
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Icon(
-                      Icons.local_offer_outlined,
-                      color: Colors.white,
-                      size: 70,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PromoLine extends StatelessWidget {
-  const _PromoLine(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 7),
-      child: Text(
-        text,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 9,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
 class _RecommendationCard extends StatelessWidget {
   const _RecommendationCard({
     required this.title,
     required this.action,
     required this.insight,
+    required this.reason,
     required this.onTap,
   });
 
   final String title;
   final String action;
   final String insight;
+  final String? reason;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 18),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF4F4F4),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Recommended For You',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.primary,
-                fontWeight: FontWeight.w800,
+    return Semantics(
+      hint: reason,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 18),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF4F4F4),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Recommended For You',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              action,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 6),
-            Text(insight, style: const TextStyle(fontSize: 12, height: 1.4)),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                action,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(insight, style: const TextStyle(fontSize: 12, height: 1.4)),
+            ],
+          ),
         ),
       ),
     );

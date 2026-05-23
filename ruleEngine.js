@@ -22,6 +22,14 @@ const getRecommendation = (userData) => {
     recommendation.primary_hero = "Solusi Investasi & KPR";
     recommendation.suggested_action = "Cek simulasi KPR atau buka Deposito";
     recommendation.insight = "Berdasarkan saldo rata-rata dan profil kemapananmu.";
+  } else if (segmen_persona === "Pensiunan") {
+      recommendation.primary_hero = "Layanan Kesehatan & Dana Pensiun";
+      recommendation.suggested_action ="Nikmati promo kesehatan dan transfer dana pensiun.";
+      recommendation.insight = "Disesuaikan dengan kebutuhan finansial dan kesehatan masa pensiun.";
+  } else if (segmen_persona === "Prioritas") {
+      recommendation.primary_hero = "Exclusive Wealth & Lifestyle";
+      recommendation.suggested_action = "Akses layanan premium dan wealth management.";
+      recommendation.insight = "Karena Anda termasuk nasabah prioritas dengan benefit eksklusif.";
   } else {
     recommendation.primary_hero = "Kemudahan Transaksi Harian";
     recommendation.suggested_action = "Gunakan fitur bayar tagihan otomatis";
@@ -42,6 +50,14 @@ const getExplanation = (userData, recommendation) => {
 
   if (segmen_persona === "Pekerja_Mapan") {
     return `Rekomendasi ini muncul karena saldo rata-rata Anda berada di atas ambang batas minimum untuk produk investasi premium.`;
+  }
+
+  if (segmen_persona === "Pensiunan") {
+    return `Kami merekomendasikan layanan kesehatan dan promo pensiun karena profil Anda termasuk segmen pensiunan aktif.`;
+  }
+
+  if (segmen_persona === "Prioritas") {
+    return `Rekomendasi premium ini diberikan karena Anda termasuk nasabah prioritas dengan akses layanan eksklusif.`;
   }
 
   return `Rekomendasi ini dipilih secara khusus berdasarkan riwayat transaksi dan kategori pengeluaran favorit Anda.`;

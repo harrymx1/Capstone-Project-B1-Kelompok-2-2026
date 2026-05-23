@@ -34,4 +34,23 @@ class FeatureTrackingService {
       // Tracking must never interrupt the user's navigation flow.
     }
   }
+
+  static Future<void> trackPromoClick({
+    required String userId,
+    required String promoName,
+  }) async {
+    try {
+      await http.post(
+        Uri.parse('$baseUrl/api/log'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'action': 'CLICK_PROMO',
+          'reason': 'User membuka promo $promoName',
+        }),
+      );
+    } catch (_) {
+      // Tracking must never interrupt the user's navigation flow.
+    }
+  }
 }
