@@ -53,4 +53,25 @@ class FeatureTrackingService {
       // Tracking must never interrupt the user's navigation flow.
     }
   }
+
+  static Future<void> trackConsentUpdate({
+    required String userId,
+    required bool consentStatus,
+  }) async {
+    try {
+      await http.post(
+        Uri.parse('$baseUrl/api/log'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'action': 'UPDATE_CONSENT',
+          'reason': consentStatus
+              ? 'User mengaktifkan AI Personalization'
+              : 'User menonaktifkan AI Personalization',
+        }),
+      );
+    } catch (_) {
+      // Audit logging must never interrupt the user's settings flow.
+    }
+  }
 }

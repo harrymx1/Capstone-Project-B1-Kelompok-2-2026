@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/pages/login_page.dart';
+import 'ai_personalization_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key, this.user});
@@ -121,6 +122,22 @@ class ProfilePage extends StatelessWidget {
                             title: 'OCTO App Notifications',
                             items: ['Manage Notifications'],
                           ),
+                          _ProfileSection(
+                            icon: Icons.privacy_tip_outlined,
+                            title: 'Privacy Settings',
+                            items: const [],
+                            children: [
+                              _ProfileMenuItem(
+                                label: 'AI Personalization',
+                                subtitle:
+                                    'Izinkan aplikasi memberikan rekomendasi personal',
+                                onTap: () => Navigator.pushNamed(
+                                  context,
+                                  AiPersonalizationPage.routeName,
+                                ),
+                              ),
+                            ],
+                          ),
                           const _ProfileSection(
                             icon: Icons.settings_applications_outlined,
                             title: 'Display & Others',
@@ -222,11 +239,13 @@ class _ProfileSection extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.items,
+    this.children = const [],
   });
 
   final IconData icon;
   final String title;
   final List<String> items;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
@@ -251,6 +270,7 @@ class _ProfileSection extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           for (final item in items) _ProfileMenuItem(label: item),
+          ...children,
         ],
       ),
     );
@@ -258,35 +278,59 @@ class _ProfileSection extends StatelessWidget {
 }
 
 class _ProfileMenuItem extends StatelessWidget {
-  const _ProfileMenuItem({required this.label});
+  const _ProfileMenuItem({required this.label, this.subtitle, this.onTap});
 
   final String label;
+  final String? subtitle;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE8E8E8))),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.text,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 56),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Color(0xFFE8E8E8))),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: AppColors.text,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle!,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                        height: 1.25,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-          ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: AppColors.primary,
-            size: 24,
-          ),
-        ],
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.primary,
+              size: 24,
+            ),
+          ],
+        ),
       ),
     );
   }
