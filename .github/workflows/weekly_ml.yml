@@ -1,0 +1,29 @@
+name: Weekly Clustering Job
+ 
+on:
+  schedule:
+    # Setiap Senin jam 01:00 WIB (18:00 UTC Minggu)
+    - cron: "0 18 * * 0"
+  workflow_dispatch:
+ 
+jobs:
+  clustering:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+ 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+ 
+      - name: Install dependencies
+        run: |
+          pip install pandas scikit-learn sqlalchemy psycopg2-binary openpyxl
+ 
+      - name: Run clustering script
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python ml_clustering.py
