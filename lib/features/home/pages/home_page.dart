@@ -33,6 +33,7 @@ class _HomePageState extends State<HomePage> {
   String? _recommendationReason;
   bool _loading = true;
   bool _hasLoaded = false;
+  bool _isBalanceVisible = false;
 
   void _trackFeatureClick(String featureName) {
     final userId = UserSession.user?['user_id'];
@@ -179,6 +180,7 @@ class _HomePageState extends State<HomePage> {
         _homeData?['recommendation'] as Map<String, dynamic>?;
 
     final promoCatalog = (_homeData?['promo_catalog'] as List<dynamic>?) ?? [];
+    final balance = _readBalance(currentUser?['saldo_rata_rata']);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -198,7 +200,15 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const _BalanceCard(),
+                          _BalanceCard(
+                            balance: balance,
+                            isVisible: _isBalanceVisible,
+                            onToggleVisibility: () {
+                              setState(() {
+                                _isBalanceVisible = !_isBalanceVisible;
+                              });
+                            },
+                          ),
                           const SizedBox(height: 20),
 
                           if (recommendation != null)
@@ -361,6 +371,12 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  num? _readBalance(dynamic value) {
+    if (value is num) return value;
+    if (value is String) return num.tryParse(value);
+    return null;
+  }
 }
 
 class _HomeHeader extends StatelessWidget {
@@ -429,7 +445,33 @@ class _HomeHeader extends StatelessWidget {
 }
 
 class _BalanceCard extends StatelessWidget {
-  const _BalanceCard();
+  const _BalanceCard({
+    required this.balance,
+    required this.isVisible,
+    required this.onToggleVisibility,
+  });
+
+  final num? balance;
+  final bool isVisible;
+  final VoidCallback onToggleVisibility;
+
+  String _formatRupiah(num? value) {
+    if (value == null) return 'Rp 0';
+
+    final digits = value.round().toString();
+    final buffer = StringBuffer();
+
+    for (var i = 0; i < digits.length; i++) {
+      final remaining = digits.length - i;
+      buffer.write(digits[i]);
+
+      if (remaining > 1 && remaining % 3 == 1) {
+        buffer.write('.');
+      }
+    }
+
+    return 'Rp $buffer';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -448,13 +490,13 @@ class _BalanceCard extends StatelessWidget {
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
+              const Expanded(
                 child: Text(
                   'Rekening Utama\n800123456789',
                   style: TextStyle(
@@ -465,19 +507,38 @@ class _BalanceCard extends StatelessWidget {
                 ),
               ),
               // TODO: replace with actual asset
-              Icon(
-                Icons.visibility_off_outlined,
+              IconButton(
+                onPressed: onToggleVisibility,
+                icon: Icon(
+                  isVisible
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                ),
                 color: Colors.white,
-                size: 22,
+                iconSize: 22,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: 32,
+                  minHeight: 32,
+                ),
               ),
             ],
           ),
-          SizedBox(height: 18),
-          Text(
+          const SizedBox(height: 18),
+          const Text(
             'Saldo Tersedia',
             style: TextStyle(color: Colors.white, fontSize: 14),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
+          Text(
+            isVisible ? _formatRupiah(balance) : 'Rp •••••••',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          if (false)
           Text(
             'Rp •••••••',
             style: TextStyle(

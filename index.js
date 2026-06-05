@@ -84,6 +84,7 @@ app.get("/api/home/:userId", async (req, res) => {
     if (userResult.rows.length === 0) return res.status(404).json({ success: false, message: "User not found" });
 
     const userData = userResult.rows[0];
+    console.log("Saldo:", userData.saldo_rata_rata);
     const personalRec = getRecommendation(userData);
     const explanation = getExplanation(userData, personalRec);
 
@@ -95,6 +96,7 @@ app.get("/api/home/:userId", async (req, res) => {
         nama: userData.nama,
         persona: userData.segmen_persona,
         kategori_fav: userData.kategori_dominan,
+        saldo_rata_rata: userData.saldo_rata_rata,
       },
       recommendation: { ...personalRec, reason: explanation },
       promo_catalog: catalogResult.rows,
