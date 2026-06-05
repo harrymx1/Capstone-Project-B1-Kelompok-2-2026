@@ -37,11 +37,8 @@ const COLORS = [
 export default function Dashboard() {
   const [featureStats, setFeatureStats] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
-
-  useEffect(() => {
-    fetchFeatureStats();
-    fetchAuditLogs();
-  }, []);
+  const [auditUserIdFilter, setAuditUserIdFilter] = useState("");
+  const [auditActionFilter, setAuditActionFilter] = useState("ALL");
 
   const fetchFeatureStats = async () => {
     try {
@@ -72,6 +69,13 @@ export default function Dashboard() {
     }
   };
 
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      fetchFeatureStats();
+      fetchAuditLogs();
+    });
+  }, []);
+
   const totalClicks = featureStats.reduce(
     (sum, item) => sum + item.clicks,
     0
@@ -80,6 +84,22 @@ export default function Dashboard() {
   const totalAudit = auditLogs.length;
 
   const totalUsers = new Set(auditLogs.map((log) => log.user_id)).size;
+
+  const filteredAuditLogs = auditLogs.filter((log) => {
+    const matchesUserId = String(log.user_id ?? "")
+      .toLowerCase()
+      .includes(auditUserIdFilter.trim().toLowerCase());
+
+    const matchesAction =
+      auditActionFilter === "ALL" || String(log.action) === auditActionFilter;
+
+    return matchesUserId && matchesAction;
+  });
+
+  const resetAuditFilters = () => {
+    setAuditUserIdFilter("");
+    setAuditActionFilter("ALL");
+  };
 
   return (
     <div
@@ -217,6 +237,38 @@ export default function Dashboard() {
       <div style={cardStyle}>
         <h2 style={{ color: "#111827", marginBottom: 20 }}>Audit Trail Activity</h2>
 
+        <div className="audit-filter-row">
+          <input
+            className="audit-filter-control"
+            type="text"
+            placeholder="Cari User ID..."
+            value={auditUserIdFilter}
+            onChange={(event) => setAuditUserIdFilter(event.target.value)}
+          />
+
+          <select
+            className="audit-filter-control"
+            value={auditActionFilter}
+            onChange={(event) => setAuditActionFilter(event.target.value)}
+          >
+            <option value="ALL">Semua Aktivitas</option>
+            <option value="LOGIN">LOGIN</option>
+            <option value="UPDATE_CONSENT">UPDATE_CONSENT</option>
+          </select>
+
+          <button
+            className="audit-reset-button"
+            type="button"
+            onClick={resetAuditFilters}
+          >
+            Reset Filter
+          </button>
+        </div>
+
+        <p className="audit-result-count">
+          Menampilkan {filteredAuditLogs.length} data audit
+        </p>
+
         <div style={{ overflowX: "auto" }}>
           <table
             style={{
@@ -235,7 +287,7 @@ export default function Dashboard() {
             </thead>
 
             <tbody>
-              {auditLogs.map((log) => (
+              {filteredAuditLogs.map((log) => (
                 <tr key={log.id}>
                   <td style={tableCell}>{log.user_id}</td>
                   <td style={tableCell}>{log.action}</td>

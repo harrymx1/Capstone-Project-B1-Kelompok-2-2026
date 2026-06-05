@@ -16,6 +16,7 @@ import '../../features/bills/pages/top_up_success_page.dart';
 import '../../features/home/pages/bottom_nav_placeholder_page.dart';
 import '../../features/home/pages/home_page.dart';
 import '../../features/investment/pages/investment_page.dart';
+import '../../features/my_schedule/pages/my_schedule_page.dart';
 import '../../features/others/pages/more_services_page.dart';
 import '../../features/profile/pages/ai_personalization_page.dart';
 import '../../features/profile/pages/profile_page.dart';
@@ -116,6 +117,8 @@ class AppRoutes {
             return const InvestmentPage();
           case WealthPage.routeName:
             return const WealthPage();
+          case MySchedulePage.routeName:
+            return const MySchedulePage();
           case MoreServicesPage.routeName:
             return const MoreServicesPage();
           case ProfilePage.routeName:

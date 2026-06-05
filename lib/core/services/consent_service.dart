@@ -11,7 +11,6 @@ class ConsentService {
     required String userId,
     required bool consentStatus,
   }) async {
-
     final response = await http.post(
       Uri.parse('$baseUrl/api/consent'),
       headers: {'Content-Type': 'application/json'},

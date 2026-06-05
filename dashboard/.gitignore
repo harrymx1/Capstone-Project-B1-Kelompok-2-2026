@@ -23,4 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+node_modules/
+dashboard/node_modules/
+dist/
+dashboard/dist/
 .env

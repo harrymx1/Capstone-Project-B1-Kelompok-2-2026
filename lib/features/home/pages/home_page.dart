@@ -9,6 +9,7 @@ import '../../../core/services/user_session.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../bills/pages/bills_top_up_page.dart';
 import '../../investment/pages/investment_page.dart';
+import '../../my_schedule/pages/my_schedule_page.dart';
 import '../../others/pages/more_services_page.dart';
 import '../../profile/pages/profile_page.dart';
 import '../../transfer/pages/transfer_page.dart';
@@ -540,7 +541,13 @@ class _ShortcutSection extends StatelessWidget {
               featureName: 'Cardless',
               routeName: CardlessPage.routeName,
             ),
-            const SizedBox.shrink(),
+            _ShortcutItem(
+              icon: Icons.event_note_outlined,
+              label: 'My Schedule',
+              featureName: 'nama_menu',
+              routeName: MySchedulePage.routeName,
+              onTap: onShortcutTap,
+            ),
             _ShortcutItem(
               icon: Icons.account_balance_wallet_outlined,
               label: 'Investment',

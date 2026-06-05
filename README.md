@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # mbanking
 
 A new Flutter project.
@@ -16,7 +15,7 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
-=======
+
 # Capstone-Project-B1-Kelompok-2-2026
 Prototipe sistem personalisasi mobile banking berbasis AI (Clustering) dan Rule-Based Engine untuk rekomendasi dinamis, transparan, dan kontekstual. Capstone Project FILKOM UB 2026 x CIMB Niaga (Topik B.1).
 
@@ -77,4 +76,3 @@ Sistem ini didesain bebas dari *real-time streaming analytics* skala besar yang 
 2. **Retraining (Belajar):** *Script* Python dieksekusi secara berkala (*Batch*). Algoritma mengambil seluruh data SCV terbaru, melatih ulang *cluster* nasabah, dan menyimpan nilai `cluster_id` yang baru kembali ke *database*.
 
 ---
->>>>>>> a531de5c89f7e1cd030b1c9ab4331dd008cac2aa
